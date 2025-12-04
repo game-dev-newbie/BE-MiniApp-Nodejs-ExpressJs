@@ -1,0 +1,13 @@
+{
+    "users": "npx sequelize-cli model:generate --name User --attributes display_name:string,email:string,phone:string,avatar_url:string",
+    "user_auth_providers": "npx sequelize-cli model:generate --name UserAuthProvider --attributes user_id:bigint,provider:string,provider_user_id:string",
+    "restaurants":"npx sequelize-cli model:generate --name Restaurant --attributes name:string,address:text,phone:string,description:text,tags:string,search_name:string,search_address:string,search_tags:string,require_deposit:boolean,default_deposit_amount:integer,is_active:boolean,average_rating:float,review_count:integer",
+    "restaurant_accounts": "npx sequelize-cli model:generate --name RestaurantAccount --attributes restaurant_id:bigint,full_name:string,email:string,password_hash:string,role:string,status:string,avatar_url:string",
+    "restaurant_tables": "npx sequelize-cli model:generate --name RestaurantTable --attributes restaurant_id:bigint,name:string,capacity:integer,location:string,status:string,view_image_url:string,view_note:string",
+    "bookings": "npx sequelize-cli model:generate --name Booking --attributes restaurant_id:bigint,table_id:bigint,user_id:bigint,people_count:integer,booking_time:date,status:string,deposit_amount:integer,payment_status:string,note:text",
+    "payments": "npx sequelize-cli model:generate --name Payment --attributes booking_id:bigint,amount:integer,provider:string,status:string",
+    "reviews": "npx sequelize-cli model:generate --name Review --attributes booking_id:bigint,restaurant_id:bigint,user_id:bigint,rating:integer,comment:text,status:string",
+    "favorite_restaurants": "npx sequelize-cli model:generate --name FavoriteRestaurant --attributes user_id:bigint,restaurant_id:bigint",
+    "notifications": "npx sequelize-cli model:generate --name Notification --attributes user_id:bigint,restaurant_id:bigint,type:string,title:string,message:text,channel:string,is_read:boolean,read_at:date,sent_at:date",
+    "restaurant_image": "npx sequelize-cli model:generate --name RestaurantImage --attributes restaurant_id:bigint,file_path:string,type:string,caption:string,is_primary:boolean"
+}

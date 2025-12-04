@@ -1,0 +1,51 @@
+"use strict";
+import { Model } from "sequelize";
+
+export default (sequelize, DataTypes) => {
+  class RestaurantAccount extends Model {
+    static associate(models) {
+      RestaurantAccount.belongsTo(models.Restaurant, {
+        foreignKey: "restaurant_id",
+      });
+    }
+  }
+
+  RestaurantAccount.init(
+    {
+      restaurant_id: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+      },
+      full_name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      password_hash: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      avatar_url: DataTypes.STRING,
+    },
+    {
+      sequelize,
+      modelName: "RestaurantAccount",
+      tableName: "restaurant_accounts",
+      underscored: true,
+      timestamps: true,
+    }
+  );
+
+  return RestaurantAccount;
+};
