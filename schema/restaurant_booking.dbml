@@ -1,0 +1,224 @@
+//////////////////////////////////////////////////////
+// USERS & AUTH
+//////////////////////////////////////////////////////
+
+Table users {
+  id           bigint [pk, increment]
+  display_name varchar
+  email        varchar [null, unique]
+  phone        varchar [null]
+  avatar_url   varchar [null]
+
+  created_at   datetime
+  updated_at   datetime
+}
+
+Table user_auth_providers {
+  id               bigint [pk, increment]
+  user_id          bigint
+  provider         varchar      // "ZALO", "GOOGLE", ...
+  provider_user_id varchar
+
+  created_at       datetime
+  updated_at       datetime
+
+  Indexes {
+    (provider, provider_user_id) [unique]
+  }
+}
+
+//////////////////////////////////////////////////////
+// RESTAURANTS & ACCOUNTS
+//////////////////////////////////////////////////////
+
+Table restaurants {
+  id                     bigint [pk, increment]
+  name                   varchar
+  address                text
+  phone                  varchar
+  description            text    [null]
+  tags                   varchar [null]
+
+  search_name            varchar [null]
+  search_address         varchar [null]
+  search_tags            varchar [null]
+
+  require_deposit        boolean [default: false]
+  default_deposit_amount int     [default: 0]
+
+  is_active              boolean [default: true]
+
+  average_rating         float   [default: 0]
+  review_count           int     [default: 0]
+
+  invite_code            varchar [null, unique] // dùng cho nhân viên đăng ký
+
+  created_at             datetime
+  updated_at             datetime
+}
+
+Table restaurant_accounts {
+  id            bigint [pk, increment]
+  restaurant_id bigint
+
+  full_name     varchar
+  email         varchar  [unique]
+  password_hash varchar
+  role          varchar  // OWNER | MANAGER | STAFF
+  status        varchar  // ACTIVE | PENDING | REJECTED | INACTIVE
+  avatar_url    varchar  [null]
+
+  created_at    datetime
+  updated_at    datetime
+}
+
+//////////////////////////////////////////////////////
+// TABLES & BOOKINGS & PAYMENTS
+//////////////////////////////////////////////////////
+
+Table restaurant_tables {
+  id            bigint [pk, increment]
+  restaurant_id bigint
+
+  name          varchar
+  capacity      int
+  location      varchar [null]
+  status        varchar        // ACTIVE | INACTIVE ...
+
+  view_image_url varchar [null]  // ảnh sơ đồ / view bàn
+  view_note      varchar [null]  // mô tả view
+
+  created_at    datetime
+  updated_at    datetime
+}
+
+Table bookings {
+  id             bigint [pk, increment]
+  restaurant_id  bigint
+  table_id       bigint   [null]
+  user_id        bigint
+
+  people_count   int
+  booking_time   datetime
+  status         varchar       // PENDING | CONFIRMED | CANCELLED | ...
+
+  deposit_amount int     [default: 0]
+  payment_status varchar [default: "NONE"]  // MOCK: NONE | PAID | REFUNDED ...
+
+  note           text   [null]
+
+  created_at     datetime
+  updated_at     datetime
+
+  Indexes {
+    (restaurant_id, booking_time)
+    (user_id, booking_time)
+  }
+}
+
+Table payments {
+  id         bigint [pk, increment]
+  booking_id bigint
+
+  amount     int
+  provider   varchar   // MOCK: "VNPay", "Momo", "MockGateway"
+  status     varchar   // PENDING | SUCCESS | FAILED ...
+
+  created_at datetime
+  updated_at datetime
+}
+
+//////////////////////////////////////////////////////
+// REVIEWS, FAVORITES, NOTIFICATIONS
+//////////////////////////////////////////////////////
+
+Table reviews {
+  id            bigint [pk, increment]
+  booking_id    bigint
+  restaurant_id bigint
+  user_id       bigint
+
+  rating        int
+  comment       text    [null]
+  status        varchar [default: "VISIBLE"] // HIDDEN nếu admin ẩn
+
+  created_at    datetime
+  updated_at    datetime
+
+  Indexes {
+    (booking_id) [unique] // 1 booking 1 review
+  }
+}
+
+Table favorite_restaurants {
+  id            bigint [pk, increment]
+  user_id       bigint
+  restaurant_id bigint
+
+  created_at    datetime
+
+  Indexes {
+    (user_id, restaurant_id) [unique]
+  }
+}
+
+Table notifications {
+  id            bigint [pk, increment]
+  user_id       bigint [null] // noti cho khách
+  restaurant_id bigint [null] // noti cho nhà hàng
+
+  type          varchar       // BOOKING_CREATED, BOOKING_REMINDER, ...
+  title         varchar
+  message       text
+  channel       varchar [default: "IN_APP"] // IN_APP | EMAIL | ZALO ...
+
+  is_read       boolean [default: false]
+  read_at       datetime [null]
+
+  created_at    datetime
+  sent_at       datetime [null]
+}
+
+//////////////////////////////////////////////////////
+// RESTAURANT IMAGES (COVER / GALLERY / MENU)
+//////////////////////////////////////////////////////
+
+Table restaurant_images {
+  id            bigint [pk, increment]
+  restaurant_id bigint
+
+  file_path     varchar        // đường dẫn file / URL
+  type          varchar        // COVER | GALLERY | MENU
+  caption       varchar [null]
+  is_primary    boolean [default: false] // cover chính cho từng type (nếu cần)
+
+  created_at    datetime
+}
+
+//////////////////////////////////////////////////////
+// RELATIONS
+//////////////////////////////////////////////////////
+
+Ref: user_auth_providers.user_id > users.id
+
+Ref: restaurant_accounts.restaurant_id > restaurants.id
+
+Ref: restaurant_tables.restaurant_id > restaurants.id
+
+Ref: bookings.restaurant_id > restaurants.id
+Ref: bookings.table_id      > restaurant_tables.id
+Ref: bookings.user_id       > users.id
+
+Ref: payments.booking_id    > bookings.id
+
+Ref: reviews.booking_id     > bookings.id
+Ref: reviews.restaurant_id  > restaurants.id
+Ref: reviews.user_id        > users.id
+
+Ref: favorite_restaurants.user_id       > users.id
+Ref: favorite_restaurants.restaurant_id > restaurants.id
+
+Ref: notifications.user_id       > users.id
+Ref: notifications.restaurant_id > restaurants.id
+
+Ref: restaurant_images.restaurant_id > restaurants.id
