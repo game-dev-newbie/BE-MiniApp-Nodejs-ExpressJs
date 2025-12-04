@@ -2,6 +2,8 @@
 import express from "express";
 import path from "path";
 import appRoutes from './routes/appRoutes.js';
+import { notFound } from "./middlewares/notFound.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import helmet from "helmet";
@@ -20,6 +22,12 @@ const __dirname = path.dirname(__filename);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 app.use('/api', appRoutes);   // => /api/v1/...
+
+// 404
+app.use(notFound);
+
+// middleware xử lý lỗi CUỐI CÙNG
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Restaurant Booking API");
