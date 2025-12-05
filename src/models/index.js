@@ -14,6 +14,7 @@ import ReviewFactory from "./review.js";
 import FavoriteRestaurantFactory from "./favorite_restaurant.js";
 import NotificationFactory from "./notification.js";
 import RestaurantImageFactory from "./restaurant_image.js";
+import AuthTokenFactory from "./auth_token.js";
 
 // Khởi tạo models
 const models = {};
@@ -29,6 +30,7 @@ models.Review = ReviewFactory(sequelize, DataTypes);
 models.FavoriteRestaurant = FavoriteRestaurantFactory(sequelize, DataTypes);
 models.Notification = NotificationFactory(sequelize, DataTypes);
 models.RestaurantImage = RestaurantImageFactory(sequelize, DataTypes);
+models.AuthToken = AuthTokenFactory(sequelize, DataTypes);
 
 // Gọi associate cho tất cả model (nếu có)
 Object.values(models).forEach((model) => {

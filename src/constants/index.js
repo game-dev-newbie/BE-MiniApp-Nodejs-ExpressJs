@@ -1,3 +1,4 @@
+// src/constants/index.js
 export * from './bookingStatus.js'
 export * from './notification.js'
 export * from './paymentStatus.js'
