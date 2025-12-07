@@ -1,7 +1,9 @@
 // src/middlewares/validate.js
-import AppError from "../utils/appError.js";
+import AppError from "../utils/AppError.js";
 
-const validate = (DtoClass, property = "body") => (req, res, next) => {
+const validate =
+  (DtoClass, property = "body") =>
+  (req, res, next) => {
     // Phòng khi quên không khai báo schema cho DTO
     if (!DtoClass?.schema) {
       return next(

@@ -4,26 +4,44 @@
 
 Table users {
   id           bigint [pk, increment]
-  display_name varchar
-  email        varchar [null, unique]
-  phone        varchar [null]
-  avatar_url   varchar [null]
+  display_name varchar(255)
+  email        varchar(255) [null, unique]
+  phone        varchar(255) [null]
+  avatar_url   varchar(255) [null]
 
   created_at   datetime
   updated_at   datetime
 }
 
 Table user_auth_providers {
-  id               bigint [pk, increment]
-  user_id          bigint
-  provider         varchar      // "ZALO", "GOOGLE", ...
-  provider_user_id varchar
+  id                bigint [pk, increment]
+  user_id           bigint
+  provider          varchar(255)      // "ZALO", "GOOGLE", ...
+  provider_user_id  varchar(255)
 
-  created_at       datetime
-  updated_at       datetime
+  created_at        datetime
+  updated_at        datetime
 
   Indexes {
     (provider, provider_user_id) [unique]
+  }
+}
+
+Table auth_tokens {
+  id           bigint [pk, increment]
+  subject_id   bigint              // id của user/restaurant_account...
+  subject_type varchar(50)         // "CUSTOMER" | "RESTAURANT_ACCOUNT" | ...
+  token_id     varchar(255)        // tid trong JWT refresh
+  type         varchar(50)         // "REFRESH"
+  is_revoked   boolean [default: false]
+  expires_at   datetime
+
+  created_at   datetime
+  updated_at   datetime
+
+  Indexes {
+    (subject_id, subject_type, type)
+    (token_id) [unique]
   }
 }
 
@@ -33,25 +51,25 @@ Table user_auth_providers {
 
 Table restaurants {
   id                     bigint [pk, increment]
-  name                   varchar
+  name                   varchar(255)
   address                text
-  phone                  varchar
-  description            text    [null]
-  tags                   varchar [null]
+  phone                  varchar(255)
+  description            text        [null]
 
-  search_name            varchar [null]
-  search_address         varchar [null]
-  search_tags            varchar [null]
+  tags                   varchar(255) [null]      // lưu từ khóa thô
+  search_name            varchar(255) [null]      // name chuẩn hóa cho search
+  search_address         varchar(255) [null]
+  search_tags            varchar(255) [null]
 
-  require_deposit        boolean [default: false]
-  default_deposit_amount int     [default: 0]
+  require_deposit        boolean     [default: false]
+  default_deposit_amount int         [default: 0]
 
-  is_active              boolean [default: true]
+  is_active              boolean     [default: true]
 
-  average_rating         float   [default: 0]
-  review_count           int     [default: 0]
+  average_rating         float       [default: 0]
+  review_count           int         [default: 0]
 
-  invite_code            varchar [null, unique] // dùng cho nhân viên đăng ký
+  invite_code            varchar(255) [unique]    // dùng cho staff register bằng mã mời
 
   created_at             datetime
   updated_at             datetime
@@ -61,49 +79,51 @@ Table restaurant_accounts {
   id            bigint [pk, increment]
   restaurant_id bigint
 
-  full_name     varchar
-  email         varchar  [unique]
-  password_hash varchar
-  role          varchar  // OWNER | MANAGER | STAFF
-  status        varchar  // ACTIVE | PENDING | REJECTED | INACTIVE
-  avatar_url    varchar  [null]
+  full_name     varchar(255)
+  email         varchar(255) [unique]
+  password_hash varchar(255)
+
+  role          varchar(50)          // OWNER | STAFF (map với RESTAURANT_ACCOUNT_ROLE)
+  status        varchar(50)          // ACTIVE | INACTIVE | PENDING...
+
+  avatar_url    varchar(255) [null]
 
   created_at    datetime
   updated_at    datetime
 }
 
 //////////////////////////////////////////////////////
-// TABLES & BOOKINGS & PAYMENTS
+// TABLES & BOOKINGS
 //////////////////////////////////////////////////////
 
 Table restaurant_tables {
   id            bigint [pk, increment]
   restaurant_id bigint
+  name          varchar(255)         // Tên bàn, ví dụ "Bàn 1", "Sofa 3"
+  capacity      int                  // số lượng người
+  location      varchar(255) [null]  // mô tả vị trí (tầng 1, gần cửa sổ...)
 
-  name          varchar
-  capacity      int
-  location      varchar [null]
-  status        varchar        // ACTIVE | INACTIVE ...
+  status        varchar(50)          // AVAILABLE | UNAVAILABLE...
 
-  view_image_url varchar [null]  // ảnh sơ đồ / view bàn
-  view_note      varchar [null]  // mô tả view
+  view_image_url varchar(255) [null] // ảnh sơ đồ / view bàn
+  view_note      varchar(255) [null] // ghi chú thêm
 
-  created_at    datetime
-  updated_at    datetime
+  created_at     datetime
+  updated_at     datetime
 }
 
 Table bookings {
   id             bigint [pk, increment]
   restaurant_id  bigint
-  table_id       bigint   [null]
+  table_id       bigint
   user_id        bigint
 
   people_count   int
   booking_time   datetime
-  status         varchar       // PENDING | CONFIRMED | CANCELLED | ...
 
+  status         varchar(50)         // PENDING | CONFIRMED | CANCELLED | COMPLETED...
   deposit_amount int     [default: 0]
-  payment_status varchar [default: "NONE"]  // MOCK: NONE | PAID | REFUNDED ...
+  payment_status varchar(50) [default: "NONE"]  // NONE | PAID | REFUNDED...
 
   note           text   [null]
 
@@ -116,21 +136,21 @@ Table bookings {
   }
 }
 
+//////////////////////////////////////////////////////
+// PAYMENTS & REVIEWS
+//////////////////////////////////////////////////////
+
 Table payments {
   id         bigint [pk, increment]
   booking_id bigint
 
   amount     int
-  provider   varchar   // MOCK: "VNPay", "Momo", "MockGateway"
-  status     varchar   // PENDING | SUCCESS | FAILED ...
+  provider   varchar(50)  // "VNPAY", "MOMO", "CASH", "ZALOPAY"...
+  status     varchar(50)  // PENDING | SUCCESS | FAILED...
 
   created_at datetime
   updated_at datetime
 }
-
-//////////////////////////////////////////////////////
-// REVIEWS, FAVORITES, NOTIFICATIONS
-//////////////////////////////////////////////////////
 
 Table reviews {
   id            bigint [pk, increment]
@@ -140,7 +160,7 @@ Table reviews {
 
   rating        int
   comment       text    [null]
-  status        varchar [default: "VISIBLE"] // HIDDEN nếu admin ẩn
+  status        varchar(50) [default: "VISIBLE"] // HIDDEN nếu admin/owner ẩn
 
   created_at    datetime
   updated_at    datetime
@@ -149,6 +169,10 @@ Table reviews {
     (booking_id) [unique] // 1 booking 1 review
   }
 }
+
+//////////////////////////////////////////////////////
+// FAVORITES, NOTIFICATIONS, IMAGES
+//////////////////////////////////////////////////////
 
 Table favorite_restaurants {
   id            bigint [pk, increment]
@@ -167,53 +191,48 @@ Table notifications {
   user_id       bigint [null] // noti cho khách
   restaurant_id bigint [null] // noti cho nhà hàng
 
-  type          varchar       // BOOKING_CREATED, BOOKING_REMINDER, ...
-  title         varchar
+  type          varchar(50)   // NEW_BOOKING | BOOKING_STATUS_CHANGED...
+  title         varchar(255)
   message       text
-  channel       varchar [default: "IN_APP"] // IN_APP | EMAIL | ZALO ...
 
-  is_read       boolean [default: false]
-  read_at       datetime [null]
+  channel       varchar(50) [default: "IN_APP"]  // IN_APP | EMAIL | SMS...
+  is_read       boolean     [default: false]
+  read_at       datetime
 
   created_at    datetime
-  sent_at       datetime [null]
+  sent_at       datetime
 }
-
-//////////////////////////////////////////////////////
-// RESTAURANT IMAGES (COVER / GALLERY / MENU)
-//////////////////////////////////////////////////////
 
 Table restaurant_images {
   id            bigint [pk, increment]
   restaurant_id bigint
 
-  file_path     varchar        // đường dẫn file / URL
-  type          varchar        // COVER | GALLERY | MENU
-  caption       varchar [null]
-  is_primary    boolean [default: false] // cover chính cho từng type (nếu cần)
+  file_path     varchar(255)
+  type          varchar(50)          // COVER | GALLERY | MENU...
+  caption       varchar(255) [null]
+  is_primary    boolean [default: false]
 
   created_at    datetime
 }
 
 //////////////////////////////////////////////////////
-// RELATIONS
+// RELATIONSHIPS
 //////////////////////////////////////////////////////
 
-Ref: user_auth_providers.user_id > users.id
+Ref: user_auth_providers.user_id       > users.id
 
 Ref: restaurant_accounts.restaurant_id > restaurants.id
+Ref: restaurant_tables.restaurant_id   > restaurants.id
 
-Ref: restaurant_tables.restaurant_id > restaurants.id
+Ref: bookings.restaurant_id           > restaurants.id
+Ref: bookings.table_id                > restaurant_tables.id
+Ref: bookings.user_id                 > users.id
 
-Ref: bookings.restaurant_id > restaurants.id
-Ref: bookings.table_id      > restaurant_tables.id
-Ref: bookings.user_id       > users.id
+Ref: payments.booking_id              > bookings.id
 
-Ref: payments.booking_id    > bookings.id
-
-Ref: reviews.booking_id     > bookings.id
-Ref: reviews.restaurant_id  > restaurants.id
-Ref: reviews.user_id        > users.id
+Ref: reviews.booking_id               > bookings.id
+Ref: reviews.restaurant_id            > restaurants.id
+Ref: reviews.user_id                  > users.id
 
 Ref: favorite_restaurants.user_id       > users.id
 Ref: favorite_restaurants.restaurant_id > restaurants.id

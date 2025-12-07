@@ -1,5 +1,5 @@
 // src/middlewares/notFound.js
-import { AppError } from "../utils/appError.js";
+import AppError from "../utils/AppError.js";
 
 export const notFound = (req, res, next) => {
   const err = new AppError(
