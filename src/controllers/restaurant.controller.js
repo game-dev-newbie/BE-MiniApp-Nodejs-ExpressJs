@@ -7,4 +7,5 @@ class RestaurantController {
   });
 }
 
-export const restaurantController = new RestaurantController();
+const restaurantController = new RestaurantController();
+export default restaurantController;

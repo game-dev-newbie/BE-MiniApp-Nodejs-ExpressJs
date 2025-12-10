@@ -1,4 +1,4 @@
-// src/routes/api/v1/dashboard/restaurant.routes.js
+// src/routes/api/v1/miniapp/restaurant.routes.js
 import restaurantController from "../../../../controllers/restaurant.controller.js";
 import { Router } from "express";
 

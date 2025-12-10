@@ -31,7 +31,7 @@ Table auth_tokens {
   id           bigint [pk, increment]
   subject_id   bigint              // id của user/restaurant_account...
   subject_type varchar(50)         // "CUSTOMER" | "RESTAURANT_ACCOUNT" | ...
-  token_id     varchar(255)        // tid trong JWT refresh
+  token_id     varchar(255)       // tid trong JWT refresh
   type         varchar(50)         // "REFRESH"
   is_revoked   boolean [default: false]
   expires_at   datetime
@@ -42,6 +42,7 @@ Table auth_tokens {
   Indexes {
     (subject_id, subject_type, type)
     (token_id) [unique]
+    (expires_at)
   }
 }
 
@@ -70,6 +71,9 @@ Table restaurants {
   review_count           int         [default: 0]
 
   invite_code            varchar(255) [unique]    // dùng cho staff register bằng mã mời
+
+  open_time              time    [null]
+  close_time             time    [null]
 
   created_at             datetime
   updated_at             datetime

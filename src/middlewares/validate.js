@@ -1,5 +1,5 @@
 // src/middlewares/validate.js
-import AppError from "../utils/AppError.js";
+import { AppError } from "../utils/appError.js";
 
 const validate =
   (DtoClass, property = "body") =>

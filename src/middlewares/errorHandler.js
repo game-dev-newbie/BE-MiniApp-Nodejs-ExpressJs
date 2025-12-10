@@ -1,5 +1,5 @@
 // src/middlewares/errorHandler.js
-import AppError from "../utils/AppError.js";
+import { AppError } from "../utils/appError.js";
 import { ValidationError as SequelizeValidationError } from "sequelize";
 
 export const errorHandler = (err, req, res, next) => {

@@ -14,25 +14,28 @@
 
 import crypto from "crypto";
 import { Op } from "sequelize";
-import db from "../models/index.js";
+import models from "../models/index.js";
 import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
 } from "../utils/jwt.js";
-import { ACCESS_TOKEN_LIFE, REFRESH_TOKEN_LIFE } from "../config/env.js";
+import { REFRESH_TOKEN_DAYS } from "../config/env.js";
 import { TOKEN_TYPES, AUTH_ROLES } from "../constants/index.js";
 // Lấy model AuthToken từ Sequelize
-const { AuthToken } = db;
-
+const { AuthToken } = models;
 
 /**
  * Tính expires_at cho refresh token (dùng lưu vào DB).
  * Trả về một đối tượng Date = now + REFRESH_TOKEN_LIFE (mặc định).
  */
 function calcRefreshExpiresAt() {
+  if (!Number.isFinite(REFRESH_TOKEN_DAYS) || REFRESH_TOKEN_DAYS <= 0) {
+    throw new Error("Invalid REFRESH_TOKEN_DAYS config");
+  }
+
   const now = Date.now();
-  const ms = REFRESH_TOKEN_LIFE * 24 * 60 * 60 * 1000;
+  const ms = REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000;
   return new Date(now + ms);
 }
 
@@ -41,7 +44,7 @@ function calcRefreshExpiresAt() {
  *
  * subject = bất kỳ thực thể đăng nhập nào:
  *   - customer (users.id)
- *   - restaurant_account (restaurant_accounts.id)  
+ *   - restaurant_account (restaurant_accounts.id)
  *
  * @param {object} params
  * @param {number} params.subjectId - id của thực thể đăng nhập (users.id hoặc restaurant_accounts.id)
@@ -51,7 +54,12 @@ function calcRefreshExpiresAt() {
  *
  * @returns {Promise<{ accessToken: string, refreshToken: string }>}
  */
-export async function issueTokens({ subjectId, subjectType, role, provider }) {
+export const issueTokens = async ({
+  subjectId,
+  subjectType,
+  role,
+  provider,
+}) => {
   if (!subjectId || !subjectType) {
     throw new Error("subjectId và subjectType là bắt buộc khi issueTokens.");
   }
@@ -98,7 +106,7 @@ export async function issueTokens({ subjectId, subjectType, role, provider }) {
     accessToken,
     refreshToken,
   };
-}
+};
 
 /**
  * Xử lý luồng "refresh token":
@@ -115,7 +123,7 @@ export async function issueTokens({ subjectId, subjectType, role, provider }) {
  *
  * @returns {Promise<{ accessToken: string, refreshToken: string, principal: any }>}
  */
-export async function refreshTokens(refreshToken, getPrincipalBySubject) {
+export const refreshTokens = async (refreshToken, getPrincipalBySubject) => {
   if (!refreshToken) {
     throw new Error("Thiếu refreshToken trong request.");
   }
@@ -187,7 +195,7 @@ export async function refreshTokens(refreshToken, getPrincipalBySubject) {
     refreshToken: newRefreshToken,
     principal,
   };
-}
+};
 
 /**
  * Thu hồi (revoke) tất cả refresh token của 1 subject.
@@ -196,7 +204,7 @@ export async function refreshTokens(refreshToken, getPrincipalBySubject) {
  * @param {number} subjectId
  * @param {string} subjectType
  */
-export async function revokeAllTokensForSubject(subjectId, subjectType) {
+export const revokeAllTokensForSubject = async (subjectId, subjectType) => {
   await AuthToken.update(
     { is_revoked: true },
     {
@@ -208,7 +216,7 @@ export async function revokeAllTokensForSubject(subjectId, subjectType) {
       },
     }
   );
-}
+};
 
 /**
  * Thu hồi một refresh token cụ thể dựa trên token_id (tid).
@@ -216,7 +224,7 @@ export async function revokeAllTokensForSubject(subjectId, subjectType) {
  *
  * @param {string} tokenId
  */
-export async function revokeTokenById(tokenId) {
+export const revokeTokenById = async (tokenId) => {
   await AuthToken.update(
     { is_revoked: true },
     {
@@ -227,4 +235,4 @@ export async function revokeTokenById(tokenId) {
       },
     }
   );
-}
+};

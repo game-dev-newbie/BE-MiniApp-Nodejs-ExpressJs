@@ -1,6 +1,6 @@
 // src/utils/AppError.js
 
-export default class AppError extends Error {
+export class AppError extends Error {
   constructor(
     message,
     statusCode = 500,

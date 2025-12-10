@@ -45,6 +45,8 @@ CREATE TABLE `restaurants` (
   `average_rating` float DEFAULT 0,
   `review_count` int DEFAULT 0,
   `invite_code` varchar(255) UNIQUE,
+  `open_time` time,
+  `close_time` time,
   `created_at` datetime,
   `updated_at` datetime
 );
@@ -149,13 +151,15 @@ CREATE INDEX `auth_tokens_index_1` ON `auth_tokens` (`subject_id`, `subject_type
 
 CREATE UNIQUE INDEX `auth_tokens_index_2` ON `auth_tokens` (`token_id`);
 
-CREATE INDEX `bookings_index_3` ON `bookings` (`restaurant_id`, `booking_time`);
+CREATE INDEX `auth_tokens_index_3` ON `auth_tokens` (`expires_at`);
 
-CREATE INDEX `bookings_index_4` ON `bookings` (`user_id`, `booking_time`);
+CREATE INDEX `bookings_index_4` ON `bookings` (`restaurant_id`, `booking_time`);
 
-CREATE UNIQUE INDEX `reviews_index_5` ON `reviews` (`booking_id`);
+CREATE INDEX `bookings_index_5` ON `bookings` (`user_id`, `booking_time`);
 
-CREATE UNIQUE INDEX `favorite_restaurants_index_6` ON `favorite_restaurants` (`user_id`, `restaurant_id`);
+CREATE UNIQUE INDEX `reviews_index_6` ON `reviews` (`booking_id`);
+
+CREATE UNIQUE INDEX `favorite_restaurants_index_7` ON `favorite_restaurants` (`user_id`, `restaurant_id`);
 
 ALTER TABLE `user_auth_providers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 

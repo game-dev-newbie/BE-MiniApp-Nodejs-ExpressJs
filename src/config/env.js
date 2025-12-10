@@ -17,7 +17,18 @@ export const DB_USER = process.env.DB_USER || "root";
 export const DB_PASSWORD = process.env.DB_PASSWORD || null;
 
 // JWT configuration
-export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
-export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET
-export const ACCESS_TOKEN_LIFE = process.env.ACCESS_TOKEN_LIFE
-export const REFRESH_TOKEN_LIFE = process.env.REFRESH_TOKEN_LIFE
+export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+export const ACCESS_TOKEN_MINUTES =
+  Number.parseInt(process.env.ACCESS_TOKEN_MINUTES) || 5;
+export const REFRESH_TOKEN_DAYS =
+  Number.parseInt(process.env.REFRESH_TOKEN_DAYS) || 7;
+export const ACCESS_EXPIRES_AT = `${ACCESS_TOKEN_MINUTES}m`;
+export const REFRESH_EXPIRES_AT = `${REFRESH_TOKEN_DAYS}d`;
+
+// Zalo configuration
+export const ZALO_APP_ID = process.env.ZALO_APP_ID || "";
+export const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || "";
+export const ZALO_MINI_APP_ID = process.env.ZALO_MINI_APP_ID || "";
+export const ZALO_GRAPH_API_URL =
+  process.env.ZALO_GRAPH_API_URL || "https://graph.zalo.me/v2.0/me";

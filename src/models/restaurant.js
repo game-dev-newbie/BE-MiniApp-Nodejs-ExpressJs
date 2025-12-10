@@ -60,6 +60,14 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING(64),
         allowNull: true,
       },
+      open_time: {
+        type: DataTypes.TIME,
+        allowNull: true,
+      },
+      close_time: {
+        type: DataTypes.TIME,
+        allowNull: true,
+      },
     },
     {
       sequelize,

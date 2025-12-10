@@ -49,18 +49,24 @@ module.exports = {
       },
     });
 
-    // Index hỗ trợ query nhanh
+    // Index cho truy vấn theo chủ thể (revoke tất cả token của 1 user/account)
     await queryInterface.addIndex(
       "auth_tokens",
-      ["subject_id", "subject_type", "type"],
+      ["subject_id", "subject_type"],
       {
-        name: "auth_tokens_subject_type_idx",
+        name: "auth_tokens_subject_idx",
       }
     );
 
+    // Index unique cho token_id (tid), đảm bảo mỗi token_id chỉ có 1 record
     await queryInterface.addIndex("auth_tokens", ["token_id"], {
       name: "auth_tokens_token_id_unique",
       unique: true,
+    });
+
+    // Index cho expires_at (dọn rác token hết hạn nhanh hơn)
+    await queryInterface.addIndex("auth_tokens", ["expires_at"], {
+      name: "auth_tokens_expires_at_idx",
     });
   },
 
