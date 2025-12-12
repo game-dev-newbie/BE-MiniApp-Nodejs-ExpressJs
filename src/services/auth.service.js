@@ -18,14 +18,6 @@ import { issueTokens } from "./token.service.js";
 const { User, UserAuthProvider, Restaurant, RestaurantAccount } = models;
 
 // =========================
-// Helper: DTO response
-// =========================
-
-import UserResponse from "../dtos/responses/user.response.js";
-import RestaurantAccountResponse from "../dtos/responses/restaurantAccount.response.js";
-import RestaurantResponse from "../dtos/responses/restaurant.response.js";
-
-// =========================
 // 1) OWNER REGISTER + TẠO RESTAURANT
 // =========================
 
@@ -47,7 +39,7 @@ import RestaurantResponse from "../dtos/responses/restaurant.response.js";
  * - Tạo Restaurant
  * - Tạo RestaurantAccount (OWNER, ACTIVE)
  * - Set invite_code cho restaurant
- * - Trả về cặp token + thông tin
+ * - Trả về: { account, restaurant, tokens }
  */
 export const registerDashboardOwner = async (payload) => {
   const {
@@ -109,11 +101,7 @@ export const registerDashboardOwner = async (payload) => {
     provider: AUTH_PROVIDERS.LOCAL,
   });
   // 6. Chuẩn hóa response bằng DTO
-  return {
-    account: RestaurantAccountResponse.fromModel(account),
-    restaurant: RestaurantResponse.fromModel(restaurant),
-    tokens,
-  };
+  return { account, restaurant, tokens };
 };
 
 // =========================
@@ -160,11 +148,7 @@ export const registerDashboardStaff = async (payload) => {
   });
 
   // 5. Trả về thông tin tài khoản + nhà hàng (chưa có token)
-  return {
-    account: RestaurantAccountResponse.fromModel(account),
-    restaurant: RestaurantResponse.fromModel(restaurant),
-    message: "Tài khoản STAFF đã tạo, chờ chủ nhà hàng duyệt.",
-  };
+  return { account, restaurant };
 };
 
 // =========================
@@ -201,6 +185,10 @@ export const loginDashboard = async (payload) => {
     throw new AppError("Tài khoản chưa được duyệt hoặc đã bị khóa", 403);
   }
 
+  if (account.is_locked) {
+    throw new AppError("Tài khoản đã bị khóa bởi chủ nhà hàng", 403);
+  }
+
   // 4. Lấy thông tin nhà hàng (cho dashboard cần context)
   const restaurant = await Restaurant.findByPk(account.restaurant_id);
 
@@ -213,11 +201,7 @@ export const loginDashboard = async (payload) => {
   });
 
   // 6. Chuẩn hóa response bằng DTO
-  return {
-    account: RestaurantAccountResponse.fromModel(account),
-    restaurant: RestaurantResponse.fromModel(restaurant),
-    tokens,
-  };
+  return { account, restaurant, tokens };
 };
 
 // =========================
@@ -342,8 +326,5 @@ export const loginWithZalo = async (payload) => {
   });
 
   // 4. Chuẩn hóa response bằng DTO
-  return {
-    user: UserResponse.fromModel(user),
-    tokens,
-  };
+  return { user, tokens };
 };

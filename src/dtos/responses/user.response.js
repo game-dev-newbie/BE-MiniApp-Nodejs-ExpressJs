@@ -1,4 +1,5 @@
 // src/dtos/responses/user.response.js
+import time from "../../utils/time.js";
 
 class UserResponse {
   /**
@@ -29,8 +30,8 @@ class UserResponse {
       email,
       phone,
       avatar_url,
-      created_at,
-      updated_at,
+      created_at: time.toVNDateTime(created_at),
+      updated_at: time.toVNDateTime(updated_at),
       ...rest,
     };
   }

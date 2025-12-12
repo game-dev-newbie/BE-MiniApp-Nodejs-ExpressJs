@@ -4,7 +4,16 @@ import { Router } from "express";
 
 const router = Router();
 
-// Định nghĩa route để tạo bàn ăn
-router.get("/", restaurantController.createTable);
+// Home – top 5 rating cao nhất
+router.get("/home/top-rated", restaurantController.getMiniappTopRated);
+
+// Home – top 5 được yêu thích nhất
+router.get("/home/top-favorites", restaurantController.getMiniappTopFavorite);
+
+// Home – top theo tag/time-slot (?tag=morning / lunch / dinner / ...)
+router.get("/home/top-by-tag", restaurantController.getMiniappTopByTag);
+
+// Detail nhà hàng
+router.get("/:id", restaurantController.getMiniappDetail);
 
 export default router;

@@ -11,6 +11,7 @@ export const errorHandler = (err, req, res, next) => {
     return res.status(err.statusCode).json({
       success: false,
       error: {
+        statusCode: err.statusCode,
         code: err.code,
         message: err.message,
         details: err.details ?? null,
@@ -23,6 +24,7 @@ export const errorHandler = (err, req, res, next) => {
     return res.status(400).json({
       success: false,
       error: {
+        statusCode: 400,
         code: "DB_VALIDATION_ERROR",
         message: "Dữ liệu không hợp lệ với database",
         details: err.errors?.map((e) => ({

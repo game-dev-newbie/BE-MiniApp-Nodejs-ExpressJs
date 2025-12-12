@@ -1,4 +1,5 @@
 // src/dtos/responses/restaurantTable.response.js
+import time from "../../utils/time.js";
 
 class RestaurantTableResponse {
   /**
@@ -35,8 +36,8 @@ class RestaurantTableResponse {
       status,
       view_image_url,
       view_note,
-      created_at,
-      updated_at,
+      created_at: time.toVNDateTime(created_at),
+      updated_at: time.toVNDateTime(updated_at),
       ...rest,
     };
   }

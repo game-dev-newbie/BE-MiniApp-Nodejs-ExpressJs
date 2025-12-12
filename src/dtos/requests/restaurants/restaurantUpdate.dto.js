@@ -1,4 +1,4 @@
-// src/dtos/requests/restaurant/restaurantUpdate.dto.js
+// src/dtos/requests/restaurants/restaurantUpdate.dto.js
 import Joi from "joi";
 
 class RestaurantUpdateDto {
@@ -10,11 +10,11 @@ class RestaurantUpdateDto {
       description: Joi.string().allow("", null),
       tags: Joi.string().allow("", null),
 
-      // thời gian mở cửa / đóng cửa dạng "HH:mm"
       open_time: Joi.string()
         .pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
         .message("Giờ mở cửa phải có dạng HH:mm")
         .allow(null),
+
       close_time: Joi.string()
         .pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
         .message("Giờ đóng cửa phải có dạng HH:mm")
@@ -24,7 +24,10 @@ class RestaurantUpdateDto {
       default_deposit_amount: Joi.number().integer().min(0),
 
       is_active: Joi.boolean(),
-    }).min(1); // bắt buộc phải có ít nhất 1 field truyền lên
+
+      // cho phép URL tuyệt đối hoặc path tương đối, nên không dùng .uri()
+      main_image_url: Joi.string().max(255).allow("", null),
+    }).min(1); // phải có ít nhất 1 field để update
   }
 }
 

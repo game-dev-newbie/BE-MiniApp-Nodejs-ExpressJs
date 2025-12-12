@@ -23,6 +23,14 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.BIGINT,
         allowNull: false,
       },
+      phone: {
+        type: DataTypes.STRING(20),
+        allowNull: false, 
+      },
+      customer_name: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
       people_count: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -51,6 +59,8 @@ export default (sequelize, DataTypes) => {
       tableName: "bookings",
       underscored: true,
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 

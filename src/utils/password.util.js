@@ -10,12 +10,12 @@ const SALT_ROUNDS = 10;
  * @param {string} plainPassword - mật khẩu người dùng nhập
  * @returns {Promise<string>} - password_hash
  */
-export async function hashPassword(plainPassword) {
+export const hashPassword = async (plainPassword) => {
   if (!plainPassword) {
     throw new Error("plainPassword is required for hashPassword");
   }
   return bcrypt.hash(plainPassword, SALT_ROUNDS);
-}
+};
 
 /**
  * So sánh mật khẩu thuần với hash trong DB.
@@ -23,12 +23,12 @@ export async function hashPassword(plainPassword) {
  * @param {string} passwordHash
  * @returns {Promise<boolean>}
  */
-export async function comparePassword(plainPassword, passwordHash) {
+export const comparePassword = async (plainPassword, passwordHash) => {
   if (!plainPassword || !passwordHash) {
     return false;
   }
   return bcrypt.compare(plainPassword, passwordHash);
-}
+};
 
 export default {
   hashPassword,

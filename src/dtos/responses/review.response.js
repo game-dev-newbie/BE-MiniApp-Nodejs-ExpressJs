@@ -3,6 +3,7 @@
 import UserResponse from "./user.response.js";
 import RestaurantResponse from "./restaurant.response.js";
 import BookingResponse from "./booking.response.js";
+import time from "../../utils/time.js";
 
 class ReviewResponse {
   /**
@@ -46,8 +47,8 @@ class ReviewResponse {
       rating,
       comment,
       status,
-      created_at,
-      updated_at,
+      created_at: time.toVNDateTime(created_at),
+      updated_at: time.toVNDateTime(updated_at),
       ...rest,
     };
 

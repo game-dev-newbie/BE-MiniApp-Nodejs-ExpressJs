@@ -72,6 +72,9 @@ Table restaurants {
 
   invite_code            varchar(255) [unique]    // dùng cho staff register bằng mã mời
 
+  favorite_count         int [default: 0]
+  main_image_url         varchar(255)
+
   open_time              time    [null]
   close_time             time    [null]
 
@@ -89,7 +92,7 @@ Table restaurant_accounts {
 
   role          varchar(50)          // OWNER | STAFF (map với RESTAURANT_ACCOUNT_ROLE)
   status        varchar(50)          // ACTIVE | INACTIVE | PENDING...
-
+  is_locked     boolean [default: false]
   avatar_url    varchar(255) [null]
 
   created_at    datetime
@@ -121,7 +124,7 @@ Table bookings {
   restaurant_id  bigint
   table_id       bigint
   user_id        bigint
-
+  phone          varchar(20)
   people_count   int
   booking_time   datetime
 

@@ -39,6 +39,8 @@ export default (sequelize, DataTypes) => {
       tableName: "restaurant_tables",
       underscored: true,
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 

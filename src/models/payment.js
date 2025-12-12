@@ -33,6 +33,8 @@ export default (sequelize, DataTypes) => {
       tableName: "payments",
       underscored: true,
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 

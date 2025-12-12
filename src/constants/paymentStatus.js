@@ -14,7 +14,6 @@ export const PAYMENT_PROVIDER = Object.freeze({
   ZALOPAY: "ZALOPAY",
   MOMO: "MOMO",
   VNPAY: "VNPAY",
-  CASH: "CASH",
 });
 export const PAYMENT_PROVIDER_LIST = Object.freeze(
   Object.values(PAYMENT_PROVIDER)

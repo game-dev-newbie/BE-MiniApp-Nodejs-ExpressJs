@@ -60,6 +60,15 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING(64),
         allowNull: true,
       },
+      favorite_count: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      main_image_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       open_time: {
         type: DataTypes.TIME,
         allowNull: true,
@@ -75,6 +84,8 @@ export default (sequelize, DataTypes) => {
       tableName: "restaurants",
       underscored: true,
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 

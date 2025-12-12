@@ -36,6 +36,12 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      is_locked: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+
       avatar_url: DataTypes.STRING,
     },
     {
@@ -44,6 +50,8 @@ export default (sequelize, DataTypes) => {
       tableName: "restaurant_accounts",
       underscored: true,
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 

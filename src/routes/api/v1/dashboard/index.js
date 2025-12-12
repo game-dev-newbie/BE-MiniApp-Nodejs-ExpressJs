@@ -2,19 +2,31 @@
 import { Router } from "express";
 
 // Import các route con
-import restaurantRoutes from "./restaurant.routes.js";
-import authRoutes from "./auth.routes.js";
-import staffRoutes from "./staff.routes.js";
+import restaurantDashboardRoutes from "./restaurant.routes.js";
+import restaurantTableDashboardRoutes from "./restaurantTable.routes.js";
+import authDashboardRoutes from "./auth.routes.js";
+import staffDashboardRoutes from "./staff.routes.js";
+import bookingDashboardRoutes from "./booking.routes.js";
+import notificationDashboardRoutes from "./notification.routes.js";
 
 const router = Router();
 
 // Route dùng để xác thực người dùng
-router.use("/auth", authRoutes);
+router.use("/auth", authDashboardRoutes);
 
 // Route dùng để quản lý nhân viên
-router.use("/staff", staffRoutes);
+router.use("/staff", staffDashboardRoutes);
 
 // Route dùng để quản lý nhà hàng
-router.use("/restaurants", restaurantRoutes);
+router.use("/restaurants", restaurantDashboardRoutes);
+
+// Route dùng để quản lý bàn
+router.use("/tables", restaurantTableDashboardRoutes);
+
+// Route dùng để quản lý đặt bàn
+router.use("/bookings", bookingDashboardRoutes);
+
+// Route dùng để quản lý thông báo
+router.use('/notifications', notificationDashboardRoutes);
 
 export default router;

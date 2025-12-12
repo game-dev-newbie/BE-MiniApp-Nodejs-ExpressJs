@@ -3,6 +3,7 @@
 import RestaurantResponse from "./restaurant.response.js";
 import RestaurantTableResponse from "./restaurantTable.response.js";
 import UserResponse from "./user.response.js";
+import time from "../../utils/time.js";
 
 class BookingResponse {
   /**
@@ -26,6 +27,7 @@ class BookingResponse {
       restaurant_id,
       table_id,
       user_id,
+      phone,
       people_count,
       booking_time,
       status,
@@ -46,14 +48,15 @@ class BookingResponse {
       restaurant_id,
       table_id,
       user_id,
+      phone,
       people_count,
-      booking_time,
+      booking_time: time.toVNDateTime(booking_time),
       status,
       deposit_amount,
       payment_status,
       note,
-      created_at,
-      updated_at,
+      created_at: time.toVNDateTime(created_at),
+      updated_at: time.toVNDateTime(updated_at),
       ...rest,
     };
 

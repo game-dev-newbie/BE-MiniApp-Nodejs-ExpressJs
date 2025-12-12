@@ -48,6 +48,8 @@ export default (sequelize, DataTypes) => {
       tableName: "auth_tokens",
       underscored: true,
       timestamps: true, // created_at, updated_at
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 

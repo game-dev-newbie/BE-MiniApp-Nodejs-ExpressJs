@@ -8,6 +8,7 @@ export const RESTAURANT_ACCOUNT_STATUS = Object.freeze({
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
   INVITED: "INVITED", // gửi mail/invite nhưng chưa accept
+  REJECTED: "REJECTED", // bị từ chối bởi OWNER
 });
 
 export const RESTAURANT_ACCOUNT_ROLE_LIST = Object.freeze(

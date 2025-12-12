@@ -29,6 +29,8 @@ export default (sequelize, DataTypes) => {
       tableName: "user_auth_providers",
       underscored: true,
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 

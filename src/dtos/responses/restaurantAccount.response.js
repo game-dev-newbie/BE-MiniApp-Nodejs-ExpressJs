@@ -1,4 +1,5 @@
 // src/dtos/responses/restaurantAccount.response.js
+import time from "../../utils/time.js";
 
 class RestaurantAccountResponse {
   /**
@@ -19,6 +20,7 @@ class RestaurantAccountResponse {
       email,
       role,
       status,
+      is_locked,
       avatar_url,
       created_at,
       updated_at,
@@ -33,9 +35,10 @@ class RestaurantAccountResponse {
       email,
       role,
       status,
+      is_locked,
       avatar_url,
-      created_at,
-      updated_at,
+      created_at: time.toVNDateTime(created_at),
+      updated_at: time.toVNDateTime(updated_at),
       ...rest,
     };
   }

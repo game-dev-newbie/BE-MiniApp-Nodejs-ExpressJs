@@ -10,6 +10,24 @@ const sequelize = new Sequelize(
     host: DB_HOST || "localhost",
     port: DB_PORT ? Number(DB_PORT) : 3306,
     dialect: "mysql",
+
+    timezone: "+07:00", // gửi Date xuống DB theo giờ VN
+
+    dialectOptions: {
+      timezone: "local",
+      dateStrings: true,
+      typeCast: function (field, next) {
+        if (field.type === "DATETIME" || field.type === "TIMESTAMP") {
+          return field.string();
+        }
+        return next();
+      },
+    },
+
+    define: {
+      underscored: true,
+      timestamps: true,
+    },
     logging: true, // bật lên nếu muốn debug SQL
   }
 );
