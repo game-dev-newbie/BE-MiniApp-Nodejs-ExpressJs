@@ -1,7 +1,7 @@
 CREATE TABLE `users` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `display_name` varchar(255),
-  `email` varchar(255) UNIQUE,
+  `email` varchar(255) COMMENT 'UNIQUE',
   `phone` varchar(255),
   `avatar_url` varchar(255),
   `created_at` datetime,
@@ -44,8 +44,8 @@ CREATE TABLE `restaurants` (
   `is_active` boolean DEFAULT true,
   `average_rating` float DEFAULT 0,
   `review_count` int DEFAULT 0,
-  `invite_code` varchar(255) UNIQUE,
   `favorite_count` int DEFAULT 0,
+  `invite_code` varchar(255) COMMENT 'UNIQUE code để owner/staff join',
   `main_image_url` varchar(255),
   `open_time` time,
   `close_time` time,
@@ -57,11 +57,11 @@ CREATE TABLE `restaurant_accounts` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `restaurant_id` bigint,
   `full_name` varchar(255),
-  `email` varchar(255) UNIQUE,
+  `email` varchar(255) COMMENT 'UNIQUE',
   `password_hash` varchar(255),
   `role` varchar(50),
   `status` varchar(50),
-  `is_locked`: boolean DEFAULT false,
+  `is_locked` boolean DEFAULT false,
   `avatar_url` varchar(255),
   `created_at` datetime,
   `updated_at` datetime
@@ -86,11 +86,16 @@ CREATE TABLE `bookings` (
   `table_id` bigint,
   `user_id` bigint,
   `phone` varchar(20),
+  `customer_name` varchar(100),
   `people_count` int,
   `booking_time` datetime,
   `status` varchar(50),
   `deposit_amount` int DEFAULT 0,
   `payment_status` varchar(50) DEFAULT 'NONE',
+  `payment_provider` varchar(50),
+  `payment_reference` varchar(255),
+  `paid_at` datetime,
+  `refunded_at` datetime,
   `note` text,
   `created_at` datetime,
   `updated_at` datetime
@@ -114,6 +119,10 @@ CREATE TABLE `reviews` (
   `rating` int,
   `comment` text,
   `status` varchar(50) DEFAULT 'VISIBLE',
+  `reply_comment` text,
+  `reply_account_id` bigint,
+  `reply_created_at` datetime,
+  `reply_updated_at` datetime,
   `created_at` datetime,
   `updated_at` datetime
 );
@@ -165,6 +174,8 @@ CREATE UNIQUE INDEX `reviews_index_6` ON `reviews` (`booking_id`);
 
 CREATE UNIQUE INDEX `favorite_restaurants_index_7` ON `favorite_restaurants` (`user_id`, `restaurant_id`);
 
+ALTER TABLE `users` COMMENT = 'End-user (customer) đăng nhập qua Zalo / social.';
+
 ALTER TABLE `user_auth_providers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `restaurant_accounts` ADD FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`);
@@ -184,6 +195,8 @@ ALTER TABLE `reviews` ADD FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`
 ALTER TABLE `reviews` ADD FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`);
 
 ALTER TABLE `reviews` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+ALTER TABLE `reviews` ADD FOREIGN KEY (`reply_account_id`) REFERENCES `restaurant_accounts` (`id`);
 
 ALTER TABLE `favorite_restaurants` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 

@@ -11,20 +11,32 @@ class NotificationController {
    */
   getMyNotifications = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const { is_read, type, limit, offset } = req.query;
+
+    const {
+      read_status,
+      is_read, // để back-compat, nhưng FE mới nên dùng read_status
+      type,
+      limit,
+      offset,
+      from_time,
+      to_time,
+    } = req.query;
 
     const result = await notificationService.getUserNotifications(userId, {
+      read_status,
       is_read,
       type,
       limit,
       offset,
+      from_time,
+      to_time,
     });
 
     const items = NotificationResponse.fromList(result.items);
 
     return res.status(200).json({
       success: true,
-      message: "Lấy danh sách thông báo thành công",
+      message: "Lấy danh sách thông báo miniapp thành công",
       data: {
         items,
         pagination: {
@@ -100,17 +112,28 @@ class NotificationController {
    * GET /dashboard/notifications?is_read=false&type=BOOKING_CREATED&limit=20&offset=0
    */
   getRestaurantNotifications = catchAsync(async (req, res, next) => {
-    // giả sử middleware auth đã gắn restaurantAccount vào req
     const restaurantId = req.restaurantAccount.restaurant_id;
-    const { is_read, type, limit, offset } = req.query;
+
+    const {
+      read_status,
+      is_read, // back-compat
+      type,
+      limit,
+      offset,
+      from_time,
+      to_time,
+    } = req.query;
 
     const result = await notificationService.getRestaurantNotifications(
       restaurantId,
       {
+        read_status,
         is_read,
         type,
         limit,
         offset,
+        from_time,
+        to_time,
       }
     );
 
@@ -118,7 +141,7 @@ class NotificationController {
 
     return res.status(200).json({
       success: true,
-      message: "Lấy danh sách thông báo nhà hàng thành công",
+      message: "Lấy danh sách thông báo dashboard thành công",
       data: {
         items,
         pagination: {

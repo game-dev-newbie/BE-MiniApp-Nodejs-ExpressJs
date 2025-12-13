@@ -117,6 +117,34 @@ class RestaurantController {
       data,
     });
   });
+
+
+  getRestaurantReviewsForMiniApp = catchAsync(async (req, res, next) => {
+    const restaurantId = req.params;
+    const { sort, limit, offset } = req.query;
+
+    const result = await restaurantService.getRestaurantReviewsForMiniApp(
+      restaurantId,
+      { sort, limit, offset }
+    );
+
+    const items = ReviewResponse.fromList(result.items, {
+      includeRelations: true,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Lấy danh sách review của nhà hàng (miniapp) thành công",
+      data: {
+        items,
+        pagination: {
+          total: result.total,
+          limit: result.limit,
+          offset: result.offset,
+        },
+      },
+    });
+  });
 }
 
 const restaurantController = new RestaurantController();

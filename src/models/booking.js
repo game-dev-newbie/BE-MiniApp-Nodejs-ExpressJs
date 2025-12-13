@@ -25,7 +25,7 @@ export default (sequelize, DataTypes) => {
       },
       phone: {
         type: DataTypes.STRING(20),
-        allowNull: false, 
+        allowNull: false,
       },
       customer_name: {
         type: DataTypes.STRING(100),
@@ -50,6 +50,26 @@ export default (sequelize, DataTypes) => {
       payment_status: {
         type: DataTypes.STRING,
         defaultValue: "NONE",
+      },
+      payment_provider: {
+        // ZALOPAY / MOMO / VNPAY / CARD / ...
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      payment_reference: {
+        // mã giao dịch giả lập / code hiển thị
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      paid_at: {
+        // thời điểm thanh toán cọc thành công
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      refunded_at: {
+        // thời điểm hoàn tiền (nếu có)
+        type: DataTypes.DATE,
+        allowNull: true,
       },
       note: DataTypes.TEXT,
     },

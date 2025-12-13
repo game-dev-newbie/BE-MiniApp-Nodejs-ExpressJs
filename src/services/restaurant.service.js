@@ -3,6 +3,8 @@
 import { Op } from "sequelize";
 import models from "../models/index.js";
 import { AppError } from "../utils/appError.js";
+import time from "../utils/time.js";
+import { REVIEW_STATUS } from "../constants/index.js";
 
 const { Restaurant, RestaurantAccount, RestaurantImage } = models;
 
@@ -161,4 +163,50 @@ export const getTopRestaurantsByTag = async (tagKeyword, limit = 5) => {
     ],
     limit,
   });
+};
+
+// Lấy danh sách review của 1 nhà hàng cho miniapp (màn detail restaurant)
+// sort:
+//  - "latest" (default): mới nhất -> cũ
+//  - "rating_desc": rating cao xuống thấp
+export const getRestaurantReviewsForMiniApp = async (
+  restaurantId,
+  { sort = "latest", limit = 20, offset = 0 } = {}
+) => {
+  const where = {
+    restaurant_id: restaurantId,
+    status: REVIEW_STATUS.VISIBLE, // miniapp chỉ thấy review đang hiển thị
+  };
+
+  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
+  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
+
+  let order;
+  if (sort === "rating_desc") {
+    order = [
+      ["rating", "DESC"],
+      ["created_at", "DESC"],
+    ];
+  } else {
+    order = [["created_at", "DESC"]];
+  }
+
+  const { rows, count } = await Review.findAndCountAll({
+    where,
+    include: [
+      { model: User, as: "user" },
+      { model: Booking, as: "booking" },
+      { model: RestaurantAccount, as: "reply_account" },
+    ],
+    order,
+    limit: parsedLimit,
+    offset: parsedOffset,
+  });
+
+  return {
+    items: rows,
+    total: count,
+    limit: parsedLimit,
+    offset: parsedOffset,
+  };
 };

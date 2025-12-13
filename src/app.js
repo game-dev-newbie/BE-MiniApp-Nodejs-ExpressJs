@@ -16,9 +16,12 @@ app.use(cors({ origin: "*" })); // sau này refine origin cũng được
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use("/static", express.static(path.join(__dirname, "public")));
+// Serve các file trong public (tuỳ bạn, nhưng quan trọng là uploads)
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "public", "uploads"))
+);
+
 
 app.use("/api", appRoutes); // => /api/v1/...
 

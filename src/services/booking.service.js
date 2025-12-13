@@ -9,6 +9,7 @@ import {
   TABLE_STATUS,
 } from "../constants/index.js";
 import time from "../utils/time.js";
+import * as paymentService from "../services/payment.service.js";
 
 const { Booking, Restaurant, RestaurantTable, User, RestaurantAccount } =
   models;
@@ -212,6 +213,10 @@ export const createBookingForUser = async (userId, payload) => {
     throw new AppError("Người dùng không tồn tại", 404);
   }
 
+  // TÍNH TOÁN ĐẶT CỌC BAN ĐẦU DỰA VÀO CẤU HÌNH NHÀ HÀNG
+  const { depositAmount, paymentStatus } =
+    paymentService.computeInitialPaymentForBooking(restaurant);
+
   // Tạm thời không chơi đặt cọc phức tạp: deposit=0, payment_status=NONE
   const booking = await Booking.create({
     restaurant_id: restaurant.id,
@@ -222,8 +227,8 @@ export const createBookingForUser = async (userId, payload) => {
     customer_name,
     booking_time: bookingDateTime,
     status: BOOKING_STATUS.PENDING,
-    deposit_amount: 0,
-    payment_status: PAYMENT_STATUS.NONE,
+    deposit_amount: depositAmount,
+    payment_status: paymentStatus,
     note: note || null,
   });
 
@@ -234,9 +239,48 @@ export const createBookingForUser = async (userId, payload) => {
 // 3) MINIAPP – LIST & DETAIL & CANCEL & UPDATE
 // ==================================
 
-export const listBookingsForUser = async (userId) => {
+export const listBookingsForUser = async (userId, filters = {}) => {
+  const { category } = filters; // "upcoming" | "history" | "cancelled"
+
+  const where = {
+    user_id: userId,
+  };
+
+  const now = new Date();
+
+  switch (category) {
+    case "upcoming": {
+      // Sắp tới: thời gian còn ở tương lai, chưa huỷ, chưa no_show, chưa complete
+      where.status = {
+        [Op.in]: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED],
+      };
+      where.booking_time = {
+        [Op.gt]: now,
+      };
+      break;
+    }
+
+    case "history": {
+      // Lịch sử: đã hoàn tất (đã check-in xong)
+      where.status = BOOKING_STATUS.COMPLETED;
+      break;
+    }
+
+    case "cancelled": {
+      // Đã huỷ: huỷ + no_show
+      where.status = {
+        [Op.in]: [BOOKING_STATUS.CANCELLED, BOOKING_STATUS.NO_SHOW],
+      };
+      break;
+    }
+
+    default: {
+      break;
+    }
+  }
+
   const bookings = await Booking.findAll({
-    where: { user_id: userId },
+    where,
     order: [["booking_time", "DESC"]],
   });
 
@@ -268,6 +312,9 @@ export const cancelBookingByUser = async (userId, bookingId) => {
       400
     );
   }
+
+  // Nếu booking có cọc và đã thanh toán (PAID) -> hoàn cọc cho khách
+  paymentService.maybeRefundDepositOnCancel(booking, { by: "USER" });
 
   booking.status = BOOKING_STATUS.CANCELLED;
   await booking.save();
@@ -488,6 +535,9 @@ export const cancelBookingByRestaurant = async (accountId, bookingId) => {
     );
   }
 
+  // Nếu nhà hàng huỷ mà booking đã thanh toán cọc -> nên hoàn cọc cho khách
+  paymentService.maybeRefundDepositOnCancel(booking, { by: "RESTAURANT" });
+
   booking.status = BOOKING_STATUS.CANCELLED;
   await booking.save();
 
@@ -511,8 +561,10 @@ export const completeBooking = async (accountId, bookingId) => {
 };
 
 export const markNoShow = async (accountId, bookingId) => {
+  // Đảm bảo account thuộc đúng nhà hàng và booking thuộc về nhà hàng đó
   const { booking } = await getBookingUnderRestaurant(accountId, bookingId);
 
+  // Chỉ cho phép đánh dấu NO_SHOW khi đã CONFIRMED
   if (booking.status !== BOOKING_STATUS.CONFIRMED) {
     throw new AppError(
       "Chỉ có thể đánh dấu NO_SHOW cho booking đang ở trạng thái CONFIRMED",
@@ -520,8 +572,25 @@ export const markNoShow = async (accountId, bookingId) => {
     );
   }
 
+  // Check thời gian: chỉ được no_show khi đã qua giờ booking
+  const GRACE_MINUTES = 15;
+  const now = new Date();
+  const graceTime = new Date(
+    booking.booking_time.getTime() + GRACE_MINUTES * 60 * 1000
+  );
+
+  if (graceTime > now) {
+    throw new AppError(
+      `Chỉ có thể đánh dấu NO_SHOW sau ${GRACE_MINUTES} phút kể từ giờ đặt bàn`,
+      400
+    );
+  }
+
+  // Nếu mọi điều kiện ok → đánh dấu NO_SHOW
   booking.status = BOOKING_STATUS.NO_SHOW;
   await booking.save();
+
+  // Sau này muốn notify cho khách thì gắn thêm createNotification() ở đây
 
   return booking;
 };

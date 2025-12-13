@@ -8,6 +8,8 @@ import authDashboardRoutes from "./auth.routes.js";
 import staffDashboardRoutes from "./staff.routes.js";
 import bookingDashboardRoutes from "./booking.routes.js";
 import notificationDashboardRoutes from "./notification.routes.js";
+import reviewDashboardRoutes from "./review.routes.js";
+import uploadRoutes from "./upload.routes.js";
 
 const router = Router();
 
@@ -27,6 +29,12 @@ router.use("/tables", restaurantTableDashboardRoutes);
 router.use("/bookings", bookingDashboardRoutes);
 
 // Route dùng để quản lý thông báo
-router.use('/notifications', notificationDashboardRoutes);
+router.use("/notifications", notificationDashboardRoutes);
+
+// Route dùng để quản lý review
+router.use("/reviews", reviewDashboardRoutes);
+
+// Route dùng để upload ảnh trên dashboard
+router.use("/uploads", uploadRoutes);
 
 export default router;

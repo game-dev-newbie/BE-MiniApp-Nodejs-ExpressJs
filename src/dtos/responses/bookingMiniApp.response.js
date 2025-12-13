@@ -44,6 +44,10 @@ class BookingMiniAppResponse {
       status,
       deposit_amount,
       payment_status,
+      payment_provider,
+      payment_reference,
+      paid_at,
+      refunded_at,
       note,
       phone,
       created_at,
@@ -70,6 +74,12 @@ class BookingMiniAppResponse {
 
       deposit_amount, // miniapp có thể dùng để hiển thị “cọc bao nhiêu”
 
+      payment_provider: payment_provider || null,
+      payment_reference: payment_reference || null,
+
+      paid_at: time.toVNDateTime(paid_at) || null,
+      refunded_at: time.toVNDateTime(refunded_at) || null,
+      
       booking_time: time.toVNDateTime(booking_time),
 
       created_at: time.toVNDateTime(created_at),

@@ -12,6 +12,14 @@ router.get(
   notificationController.getMyNotifications
 );
 
+// Lấy số lượng notification chưa đọc của user hiện tại
+router.get(
+  "/unread-count",
+  ...requireCustomer(),
+  notificationController.getMyUnreadCount
+);
+
+
 // Đánh dấu 1 notification là đã đọc
 router.patch(
   "/:id/read",
@@ -24,13 +32,6 @@ router.patch(
   "/read-all",
   ...requireCustomer(),
   notificationController.markAllMyNotificationsAsRead
-);
-
-// Lấy số lượng notification chưa đọc của user hiện tại
-router.get(
-  "/unread-count",
-  ...requireCustomer(),
-  notificationController.getMyUnreadCount
 );
 
 

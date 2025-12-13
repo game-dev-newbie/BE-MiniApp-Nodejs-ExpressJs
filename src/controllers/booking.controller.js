@@ -8,6 +8,7 @@ import {
   RestaurantTableResponse,
 } from "../dtos/index.js";
 
+
 class BookingController {
   // ============= MINIAPP =============
 
@@ -60,8 +61,11 @@ class BookingController {
   // GET /miniapp/bookings/my
   getMyBookingsMiniapp = catchAsync(async (req, res) => {
     const userId = req.user.id;
+    const { category } = req.query;
 
-    const bookings = await bookingService.listBookingsForUser(userId);
+    const bookings = await bookingService.listBookingsForUser(userId, {
+      category,
+    });
     const items = BookingMiniAppResponse.fromList(bookings);
 
     return res.status(200).json({
@@ -105,7 +109,7 @@ class BookingController {
       data,
     });
   });
-  
+
   // PATCH /miniapp/bookings/:id
   updateMyBookingMiniapp = catchAsync(async (req, res) => {
     const userId = req.user.id;

@@ -7,6 +7,10 @@ export default (sequelize, DataTypes) => {
       Review.belongsTo(models.Booking, { foreignKey: "booking_id" });
       Review.belongsTo(models.Restaurant, { foreignKey: "restaurant_id" });
       Review.belongsTo(models.User, { foreignKey: "user_id" });
+      Review.belongsTo(models.RestaurantAccount, {
+        foreignKey: "reply_account_id",
+        as: "reply_account",
+      });
     }
   }
 
@@ -33,6 +37,10 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         defaultValue: "VISIBLE",
       },
+      reply_comment: DataTypes.TEXT,
+      reply_account_id: DataTypes.BIGINT,
+      reply_created_at: DataTypes.DATE,
+      reply_updated_at: DataTypes.DATE,
     },
     {
       sequelize,

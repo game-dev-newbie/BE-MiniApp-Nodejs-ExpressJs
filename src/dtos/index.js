@@ -17,7 +17,11 @@ export { default as RestaurantTableUpdateDto } from "./requests/restaurantTables
 // Dto dành cho booking
 export { default as MiniAppCreateBookingDto } from "./requests/bookings/miniAppCreateBooking.dto.js";
 export { default as MiniAppUpdateBookingDto } from "./requests/bookings/miniAppUpdateBooking.dto.js";
+export { default as MiniAppPayDepositDto } from "./requests/bookings/miniAppPayDeposit.dto.js";
 
+// Dto dành cho reviews
+export { default as MiniAppCreateReviewDto } from "./requests/reviews/miniAppCreateReview.dto.js";
+export { default as DashboardReplyReviewDto } from "./requests/reviews/dashboardReplyReview.dto.js";
 
 /*           ==================================               */
 // Dto dành cho responses
@@ -29,3 +33,4 @@ export { default as BookingResponse } from "./responses/booking.response.js";
 export { default as BookingMiniAppResponse } from "./responses/bookingMiniApp.response.js";
 export { default as ReviewResponse } from "./responses/review.response.js";
 export { default as NotificationResponse } from "./responses/notification.response.js";
+export { default as FavoriteRestaurantResponse } from "./responses/favoriteRestaurant.response.js";

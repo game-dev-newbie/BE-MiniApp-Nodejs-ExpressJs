@@ -16,4 +16,7 @@ router.get("/home/top-by-tag", restaurantController.getMiniappTopByTag);
 // Detail nhà hàng
 router.get("/:id", restaurantController.getMiniappDetail);
 
+// Danh sách review của 1 nhà hàng
+router.get("/:id/reviews", restaurantController.getRestaurantReviewsForMiniApp);
+
 export default router;

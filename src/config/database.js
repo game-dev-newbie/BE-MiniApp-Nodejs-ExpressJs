@@ -15,13 +15,6 @@ const sequelize = new Sequelize(
 
     dialectOptions: {
       timezone: "local",
-      dateStrings: true,
-      typeCast: function (field, next) {
-        if (field.type === "DATETIME" || field.type === "TIMESTAMP") {
-          return field.string();
-        }
-        return next();
-      },
     },
 
     define: {

@@ -2,12 +2,14 @@
 
 import models from "../models/index.js";
 import { AppError } from "../utils/appError.js";
+import { Op } from "sequelize";
 import {
   NOTIFICATION_TYPE,
   NOTIFICATION_CHANNEL,
   NOTIFICATION_TYPE_LIST,
   NOTIFICATION_CHANNEL_LIST,
 } from "../constants/notification.js";
+import time from "../utils/time.js";
 
 const { Notification } = models;
 
@@ -22,6 +24,15 @@ const parseBoolean = (value) => {
   if (["true", "1", "yes"].includes(normalized)) return true;
   if (["false", "0", "no"].includes(normalized)) return false;
   return undefined;
+};
+
+const parseDateTime = (value) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+  return date;
 };
 
 /**
@@ -70,13 +81,17 @@ export const createNotification = async ({
  */
 
 // Lấy danh sách notification của user
+// Lấy danh sách notification của user
 export const getUserNotifications = async (
   userId,
   {
-    is_read, // string | boolean
+    read_status, // "all" | "read" | "unread"
+    is_read, // string | boolean (back-compat)
     type, // string
     limit = 20,
     offset = 0,
+    from_time, // string
+    to_time, // string
   } = {}
 ) => {
   if (!userId) {
@@ -88,21 +103,51 @@ export const getUserNotifications = async (
     channel: NOTIFICATION_CHANNEL.IN_APP,
   };
 
-  const isRead = parseBoolean(is_read);
-  if (typeof isRead === "boolean") {
-    where.is_read = isRead;
-  }
+  // ----- CASE 1/2/3: all / read / unread -----
+  const normalizedReadStatus = read_status
+    ? String(read_status).trim().toLowerCase()
+    : "all";
 
+  if (normalizedReadStatus === "read") {
+    // chỉ lấy đã đọc
+    where.is_read = true;
+  } else if (normalizedReadStatus === "unread") {
+    // chỉ lấy chưa đọc
+    where.is_read = false;
+  } else if (typeof is_read !== "undefined") {
+    // fallback: nếu chưa dùng read_status mà còn xài is_read cũ
+    const parsed = parseBoolean(is_read);
+    if (typeof parsed === "boolean") {
+      where.is_read = parsed;
+    }
+  }
+  // nếu read_status = "all" và không có is_read → không filter is_read
+
+  // ----- Lọc theo type (nếu có) -----
   if (type && NOTIFICATION_TYPE_LIST.includes(type)) {
     where.type = type;
   }
 
+  // ----- Lọc theo khoảng thời gian created_at (from_time / to_time) -----
+  const { start, end } = time.buildDayRange(from_time, to_time);
+
+  if (start || end) {
+    where.created_at = {};
+    if (fromTime) {
+      where.created_at[Op.gte] = start;
+    }
+    if (toTime) {
+      where.created_at[Op.lte] = end;
+    }
+  }
+
+  // ----- Phân trang -----
   const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
   const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
 
   const { rows, count } = await Notification.findAndCountAll({
     where,
-    order: [["created_at", "DESC"]],
+    order: [["created_at", "DESC"]], // mới nhất trước
     limit: parsedLimit,
     offset: parsedOffset,
   });
@@ -113,23 +158,6 @@ export const getUserNotifications = async (
     limit: parsedLimit,
     offset: parsedOffset,
   };
-};
-
-// Đánh dấu 1 notification là đã đọc
-export const markUserNotificationAsRead = async (userId, notificationId) => {
-  const notification = await Notification.findByPk(notificationId);
-
-  if (!notification || notification.user_id !== userId) {
-    throw new AppError("Không tìm thấy thông báo", 404);
-  }
-
-  if (!notification.is_read) {
-    notification.is_read = true;
-    notification.read_at = new Date();
-    await notification.save();
-  }
-
-  return notification;
 };
 
 // Đánh dấu tất cả notification là đã đọc
@@ -179,10 +207,13 @@ export const getUserUnreadCount = async (userId) => {
 export const getRestaurantNotifications = async (
   restaurantId,
   {
-    is_read, // string | boolean
+    read_status, // "all" | "read" | "unread"
+    is_read, // string | boolean (back-compat)
     type, // string
     limit = 20,
     offset = 0,
+    from_time, // string
+    to_time, // string
   } = {}
 ) => {
   if (!restaurantId) {
@@ -194,15 +225,42 @@ export const getRestaurantNotifications = async (
     channel: NOTIFICATION_CHANNEL.IN_APP,
   };
 
-  const isRead = parseBoolean(is_read);
-  if (typeof isRead === "boolean") {
-    where.is_read = isRead;
+  // ----- CASE 1/2/3: all / read / unread -----
+  const normalizedReadStatus = read_status
+    ? String(read_status).trim().toLowerCase()
+    : "all";
+
+  if (normalizedReadStatus === "read") {
+    where.is_read = true;
+  } else if (normalizedReadStatus === "unread") {
+    where.is_read = false;
+  } else if (typeof is_read !== "undefined") {
+    const parsed = parseBoolean(is_read);
+    if (typeof parsed === "boolean") {
+      where.is_read = parsed;
+    }
   }
 
+  // ----- Lọc theo type (nếu có) -----
   if (type && NOTIFICATION_TYPE_LIST.includes(type)) {
     where.type = type;
   }
 
+  // ----- Lọc theo khoảng thời gian created_at (from_time / to_time) -----
+  const fromTime = parseDateTime(from_time);
+  const toTime = parseDateTime(to_time);
+
+  if (fromTime || toTime) {
+    where.created_at = {};
+    if (fromTime) {
+      where.created_at[Op.gte] = fromTime;
+    }
+    if (toTime) {
+      where.created_at[Op.lte] = toTime;
+    }
+  }
+
+  // ----- Phân trang -----
   const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
   const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
 

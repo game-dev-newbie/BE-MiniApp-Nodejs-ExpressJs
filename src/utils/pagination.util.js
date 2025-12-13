@@ -1,7 +1,7 @@
 // src/utils/pagination.util.js
 
 const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 50;
 
 /**
  * Chuẩn hoá tham số phân trang từ query

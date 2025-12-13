@@ -7,6 +7,10 @@ export default (sequelize, DataTypes) => {
       RestaurantAccount.belongsTo(models.Restaurant, {
         foreignKey: "restaurant_id",
       });
+      RestaurantAccount.hasMany(models.Review, {
+        foreignKey: "reply_account_id",
+        as: "reply_account",
+      });
     }
   }
 

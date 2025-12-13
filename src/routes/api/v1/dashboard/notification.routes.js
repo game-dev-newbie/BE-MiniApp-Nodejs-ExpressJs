@@ -13,6 +13,13 @@ router.get(
   notificationController.getRestaurantNotifications
 );
 
+// Lấy số lượng notification chưa đọc của nhà hàng
+router.get(
+  "/unread-count",
+  ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
+  notificationController.getRestaurantUnreadCount
+);
+
 // Đanh dấu 1 notification là đã đọc
 router.patch(
   "/:id/read",
@@ -27,11 +34,5 @@ router.patch(
   notificationController.markAllRestaurantNotificationsAsRead
 );
 
-// Lấy số lượng notification chưa đọc của nhà hàng
-router.get(
-  "/unread-count",
-  ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
-  notificationController.getRestaurantUnreadCount
-);
 
 export default router;
