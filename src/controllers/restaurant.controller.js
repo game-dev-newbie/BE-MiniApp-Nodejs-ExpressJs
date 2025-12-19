@@ -163,13 +163,11 @@ class RestaurantController {
     const { limit, offset, page } = parsePagination(req.query);
 
     // Gọi service để lấy dữ liệu thô
-    const result = await restaurantService.searchRestaurantsForMiniApp(
-      {
-        keyword: q,
-        limit,
-        offset,
-      }
-    );
+    const result = await restaurantService.searchRestaurantsForMiniApp({
+      keyword: q,
+      limit,
+      offset,
+    });
 
     // Format DTO response ở controller
     // Tuỳ file restaurant.response.js của bạn, chỉnh lại method cho khớp
@@ -179,19 +177,17 @@ class RestaurantController {
       RestaurantResponse.toMiniappCard(restaurant)
     );
 
-    const meta = buildPaginationMeta({
-      total,
-      limit,
-      offset,
-      page,
-    });
-
     return res.status(200).json({
       success: true,
       message: "Tìm kiếm nhà hàng thành công",
       data: {
         items,
-        meta,
+        pagination: buildPaginationMeta({
+          total: result.total,
+          limit,
+          offset,
+          page,
+        }),
       },
     });
   });

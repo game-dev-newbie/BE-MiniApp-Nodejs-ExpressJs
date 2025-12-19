@@ -40,18 +40,28 @@ class RestaurantImageController {
     const { limit, offset, page } = parsePagination(req.query);
     const { type } = req.query;
 
-    const { items, total } =
-      await restaurantImageService.getImagesForRestaurant(restaurantId, {
+    const result = await restaurantImageService.getImagesForRestaurant(
+      restaurantId,
+      {
         type,
         limit,
         offset,
-      });
+      }
+    );
 
+    const items = RestaurantImageResponse.fromList(result.rows);
     return res.status(200).json({
       success: true,
       message: "Lấy danh sách ảnh nhà hàng thành công",
-      data: RestaurantImageResponse.fromList(items),
-      meta: buildPaginationMeta({ total, limit, offset, page }),
+      data: {
+        items,
+        pagination: buildPaginationMeta({
+          total: result.total,
+          limit,
+          offset,
+          page,
+        }),
+      },
     });
   });
 

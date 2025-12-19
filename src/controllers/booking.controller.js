@@ -285,18 +285,20 @@ class BookingController {
           }
         );
 
-      const data = BookingResponse.fromList(result.items);
+      const items = BookingResponse.fromList(result.items);
 
       return res.status(200).json({
         success: true,
         message: "Tìm kiếm booking theo tên khách hàng thành công",
-        data,
-        meta: buildPaginationMeta({
-          total: result.total,
-          limit,
-          offset,
-          page,
-        }),
+        data: {
+          items,
+          pagination: buildPaginationMeta({
+            total: result.total,
+            limit,
+            offset,
+            page,
+          }),
+        },
       });
     }
   );
