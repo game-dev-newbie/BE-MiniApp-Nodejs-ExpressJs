@@ -3,6 +3,10 @@ import { Router } from "express";
 import { requireDashboardRoles } from "../../../../middlewares/jwtAuthorization.js";
 import { AUTH_ROLES } from "../../../../constants/index.js";
 import notificationController from "../../../../controllers/notification.controller.js";
+import validate from "../../../../middlewares/validate.js";
+import {
+  DashboardListNotificationsQueryDto,
+} from "../../../../dtos/index.js";
 
 const router = Router();
 
@@ -10,6 +14,7 @@ const router = Router();
 router.get(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
+  validate(DashboardListNotificationsQueryDto, "query"),
   notificationController.getRestaurantNotifications
 );
 

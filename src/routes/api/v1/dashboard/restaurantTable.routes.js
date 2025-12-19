@@ -8,6 +8,7 @@ import {
   RestaurantTableCreateDto,
   RestaurantTableUpdateDto,
 } from "../../../../dtos/index.js";
+import { paginationQuerySchema } from "../../../../common/paginationQuery.schema.dto.js";
 import restaurantTableController from "../../../../controllers/restaurantTable.controller.js";
 
 const router = Router();
@@ -16,6 +17,7 @@ const router = Router();
 router.get(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
+  validate(paginationQuerySchema, "query"),
   restaurantTableController.listMyTables
 );
 

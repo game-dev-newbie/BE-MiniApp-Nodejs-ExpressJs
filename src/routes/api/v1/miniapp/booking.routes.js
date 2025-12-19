@@ -7,6 +7,7 @@ import paymentController from "../../../../controllers/payment.controller.js";
 import {
   MiniAppCreateBookingDto,
   MiniAppPayDepositDto,
+  MiniAppListMyBookingsQueryDto,
 } from "../../../../dtos/index.js";
 
 const router = Router();
@@ -19,7 +20,12 @@ router.get(
 );
 
 // Lịch sử booking của khách hàng miniapp
-router.get("/", ...requireCustomer(), bookingController.getMyBookingsMiniapp);
+router.get(
+  "/",
+  ...requireCustomer(),
+  validate(MiniAppListMyBookingsQueryDto, "query"),
+  bookingController.getMyBookingsMiniapp
+);
 
 // Chi tiết booking của khách hàng miniapp
 router.get(

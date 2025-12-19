@@ -90,8 +90,8 @@ export const getUserNotifications = async (
     read_status, // "all" | "read" | "unread"
     is_read, // string | boolean (back-compat)
     type, // string
-    limit = 20,
-    offset = 0,
+    limit,
+    offset,
     from_time, // string
     to_time, // string
   } = {}
@@ -143,15 +143,11 @@ export const getUserNotifications = async (
     }
   }
 
-  // ----- Phân trang -----
-  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
-  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
-
   const { rows, count } = await Notification.findAndCountAll({
     where,
     order: [["created_at", "DESC"]], // mới nhất trước
-    limit: parsedLimit,
-    offset: parsedOffset,
+    limit,
+    offset,
   });
 
   return {
@@ -256,8 +252,8 @@ export const getRestaurantNotifications = async (
     read_status, // "all" | "read" | "unread"
     is_read, // string | boolean (back-compat)
     type, // string
-    limit = 20,
-    offset = 0,
+    limit,
+    offset,
     from_time, // string
     to_time, // string
   } = {}
@@ -305,15 +301,11 @@ export const getRestaurantNotifications = async (
     }
   }
 
-  // ----- Phân trang -----
-  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
-  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
-
   const { rows, count } = await Notification.findAndCountAll({
     where,
     order: [["created_at", "DESC"]],
-    limit: parsedLimit,
-    offset: parsedOffset,
+    limit,
+    offset,
   });
 
   return {

@@ -4,6 +4,8 @@ import { Router } from "express";
 import { requireDashboardRoles } from "../../../../middlewares/jwtAuthorization.js";
 import { AUTH_ROLES } from "../../../../constants/index.js";
 import staffController from "../../../../controllers/staff.controller.js";
+import validate from "../../../../middlewares/validate.js";
+import { Dashboard } from "../../../../dtos/index.js";
 
 const router = Router();
 

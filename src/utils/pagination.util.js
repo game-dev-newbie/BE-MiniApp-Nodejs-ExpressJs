@@ -1,41 +1,37 @@
-// src/utils/pagination.util.js
+// src/utils/pagination.util.js (IMPROVED VERSION)
 
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
+const DEEP_PAGINATION_THRESHOLD = 1000;
 
 /**
- * Chuẩn hoá tham số phân trang từ query
- * Hỗ trợ cả:
- *  - ?page=1&page_size=20
- *  - ?limit=20&offset=0
+ * Parse pagination params with enhanced validation
  */
 export const parsePagination = (query = {}) => {
   const { page, page_size, limit, offset } = query;
 
-  // Ưu tiên page/page_size, nếu không có thì dùng limit/offset
   let pageNumber = Number(page) || 1;
   let pageSize = Number(page_size) || Number(limit) || DEFAULT_LIMIT;
   let offsetNumber = Number(offset) || 0;
 
-  // Chuẩn hoá
-  if (pageNumber < 0) pageNumber = 1;
+  // Normalize
+  if (pageNumber < 1) pageNumber = 1;
+  if (pageSize <= 0 || Number.isNaN(pageSize)) pageSize = DEFAULT_LIMIT;
+  if (pageSize > MAX_LIMIT) pageSize = MAX_LIMIT;
 
-  if (pageSize <= 0 || Number.isNaN(pageSize)) {
-    pageSize = DEFAULT_LIMIT;
-  }
-  if (pageSize > MAX_LIMIT) {
-    pageSize = MAX_LIMIT;
-  }
-
-  // Nếu client dùng page/page_size thì tính offset từ đó
+  // Calculate offset from page
   if (page !== undefined || page_size !== undefined) {
     offsetNumber = (pageNumber - 1) * pageSize;
   } else {
-    if (offsetNumber < 0 || Number.isNaN(offsetNumber)) {
-      offsetNumber = 0;
-    }
-    // tính lại pageNumber cho meta
+    if (offsetNumber < 0 || Number.isNaN(offsetNumber)) offsetNumber = 0;
     pageNumber = Math.floor(offsetNumber / pageSize) + 1;
+  }
+
+  // ✨ Warn about deep pagination
+  if (offsetNumber > DEEP_PAGINATION_THRESHOLD) {
+    console.warn(
+      `[Pagination Warning] Deep offset:  ${offsetNumber}. Consider cursor-based pagination for better performance. `
+    );
   }
 
   return {
@@ -46,11 +42,13 @@ export const parsePagination = (query = {}) => {
 };
 
 /**
- * Tạo meta trả về cho client
+ * Build enhanced pagination metadata
  */
 export const buildPaginationMeta = ({ total, limit, offset, page }) => {
-  const currentPage = page ?? Math.floor(offset / limit);
-  const totalPages = limit > 0 ? Math.ceil(total / limit) : 1;
+  // ✅ Protect against division by zero
+  const safeLimit = limit > 0 ? limit : 1;
+  const currentPage = page ?? Math.floor(offset / safeLimit) + 1;
+  const totalPages = Math.ceil(total / safeLimit);
 
   return {
     total,
@@ -58,5 +56,41 @@ export const buildPaginationMeta = ({ total, limit, offset, page }) => {
     offset,
     page: currentPage,
     total_pages: totalPages,
+    // ✨ Navigation helpers
+    has_next: currentPage < totalPages,
+    has_prev: currentPage > 1,
+    next_page: currentPage < totalPages ? currentPage + 1 : null,
+    prev_page: currentPage > 1 ? currentPage - 1 : null,
+  };
+};
+
+/**
+ * ✨ New:  Cursor-based pagination parser
+ */
+export const parseCursorPagination = (query = {}) => {
+  const { cursor, limit = DEFAULT_LIMIT } = query;
+
+  const safeLimit = Math.min(
+    Math.max(1, Number(limit) || DEFAULT_LIMIT),
+    MAX_LIMIT
+  );
+
+  return {
+    cursor: cursor || null,
+    limit: safeLimit,
+  };
+};
+
+/**
+ * ✨ New: Build cursor pagination metadata
+ */
+export const buildCursorPaginationMeta = ({ items, limit, hasMore }) => {
+  const nextCursor =
+    hasMore && items.length > 0 ? items[items.length - 1].id : null;
+
+  return {
+    has_more: hasMore,
+    next_cursor: nextCursor,
+    count: items.length,
   };
 };

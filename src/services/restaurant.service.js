@@ -182,15 +182,12 @@ export const getTopRestaurantsByTag = async (tagKeyword, limit = 5) => {
 //  - "rating_desc": rating cao xuống thấp
 export const getRestaurantReviewsForMiniApp = async (
   restaurantId,
-  { sort = "latest", limit = 20, offset = 0 } = {}
+  { sort = "latest", limit, offset } = {}
 ) => {
   const where = {
     restaurant_id: restaurantId,
     status: REVIEW_STATUS.VISIBLE, // miniapp chỉ thấy review đang hiển thị
   };
-
-  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
-  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
 
   let order;
   if (sort === "rating_desc") {
@@ -210,8 +207,8 @@ export const getRestaurantReviewsForMiniApp = async (
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order,
-    limit: parsedLimit,
-    offset: parsedOffset,
+    limit,
+    offset,
   });
 
   return {

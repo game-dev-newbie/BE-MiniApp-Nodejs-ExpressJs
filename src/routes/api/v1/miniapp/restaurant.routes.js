@@ -1,6 +1,11 @@
 // src/routes/api/v1/miniapp/restaurant.routes.js
 import { Router } from "express";
 import restaurantController from "../../../../controllers/restaurant.controller.js";
+import { requireCustomer } from "../../../../middlewares/jwtAuthorization.js";
+import {
+  MiniAppSearchRestaurantsQueryDto,
+  MiniAppSearchRestaurantsQueryDto,
+} from "../../../../dtos/index.js";
 import validate from "../../../../middlewares/validate.js";
 
 const router = Router();
@@ -18,9 +23,18 @@ router.get("/home/top-by-tag", restaurantController.getMiniappTopByTag);
 router.get("/:id", restaurantController.getMiniappDetail);
 
 // Danh sách review của 1 nhà hàng
-router.get("/:id/reviews", restaurantController.getRestaurantReviewsForMiniApp);
+router.get(
+  "/:id/reviews",
+  ...requireCustomer(),
+  validate(MiniAppSearchRestaurantsQueryDto, "query"),
+  restaurantController.getRestaurantReviewsForMiniApp
+);
 
 // Search realtime
-router.get("/search", validate);
+router.get(
+  "/search",
+  validate(MiniAppSearchRestaurantsQueryDto, "query"),
+  restaurantController.searchMiniApp
+);
 
 export default router;

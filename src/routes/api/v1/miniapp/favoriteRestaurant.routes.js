@@ -3,6 +3,8 @@
 import { Router } from "express";
 import favoriteRestaurantController from "../../../../controllers/favoriteRestaurant.controller.js";
 import { requireCustomer } from "../../../../middlewares/jwtAuthorization.js";
+import validate from "../../../../middlewares/validate.js";
+import { FavoriteRestaurantsListQueryDto } from "../../../../dtos/index.js";
 
 const router = Router();
 
@@ -10,6 +12,7 @@ const router = Router();
 router.get(
   "/",
   ...requireCustomer(),
+  validate(FavoriteRestaurantsListQueryDto, "query"),
   favoriteRestaurantController.getMyFavorites
 );
 
@@ -33,6 +36,5 @@ router.delete(
   ...requireCustomer(),
   favoriteRestaurantController.removeFavorite
 );
-
 
 export default router;

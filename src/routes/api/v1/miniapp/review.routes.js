@@ -3,10 +3,21 @@
 import { Router } from "express";
 import reviewController from "../../../../controllers/review.controller.js";
 import validate from "../../../../middlewares/validate.js";
-import { MiniAppCreateReviewDto } from "../../../../dtos/index.js";
+import {
+  MiniAppCreateReviewDto,
+  MiniAppListMyReviewsQueryDto,
+} from "../../../../dtos/index.js";
 import { requireCustomer } from "../../../../middlewares/jwtAuthorization.js";
 
 const router = Router();
+
+// Danh sách review của chính user
+router.get(
+  "/my-reviews",
+  ...requireCustomer(),
+  validate(MiniAppListMyReviewsQueryDto, "query"),
+  reviewController.getMyReviews
+);
 
 // Tạo review từ booking COMPLETED
 router.post(
@@ -16,8 +27,6 @@ router.post(
   reviewController.createReviewFromBooking
 );
 
-// Danh sách review của chính user
-router.get("/my-reviews", ...requireCustomer(), reviewController.getMyReviews);
 
 // Xóa review của user
 router.delete("/:id", ...requireCustomer(), reviewController.deleteMyReview);

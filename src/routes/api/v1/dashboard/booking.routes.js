@@ -4,7 +4,10 @@ import { requireDashboardRoles } from "../../../../middlewares/jwtAuthorization.
 import validate from "../../../../middlewares/validate.js";
 import { AUTH_ROLES } from "../../../../constants/index.js";
 import bookingController from "../../../../controllers/booking.controller.js";
-import { DashboardSearchBookingsByCustomerQueryDto } from "../../../../dtos/index.js";
+import {
+  DashboardSearchBookingsByCustomerQueryDto,
+  DashboardListBookingsQueryDto,
+} from "../../../../dtos/index.js";
 
 const router = Router();
 
@@ -20,6 +23,7 @@ router.get(
 router.get(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
+  validate(DashboardListBookingsQueryDto, "query"),
   bookingController.listBookingsDashboard
 );
 
@@ -57,6 +61,5 @@ router.patch(
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   bookingController.noShowBookingDashboard
 );
-
 
 export default router;

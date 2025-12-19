@@ -120,8 +120,8 @@ export const createReviewFromBooking = async (userId, bookingId, payload) => {
 export const listMyReviews = async (userId, filters = {}) => {
   const {
     reply_status, // "all" | "replied" | "not_replied"
-    limit = 20,
-    offset = 0,
+    limit,
+    offset,
   } = filters;
 
   const where = {
@@ -141,9 +141,6 @@ export const listMyReviews = async (userId, filters = {}) => {
     where.reply_comment = null;
   }
 
-  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
-  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
-
   const { rows, count } = await Review.findAndCountAll({
     where,
     include: [
@@ -152,8 +149,8 @@ export const listMyReviews = async (userId, filters = {}) => {
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order: [["created_at", "DESC"]],
-    limit: parsedLimit,
-    offset: parsedOffset,
+    limit,
+    offset,
   });
 
   return {
@@ -198,15 +195,12 @@ export const listRestaurantReviewsForMiniApp = async (
   restaurantId,
   filters = {}
 ) => {
-  const { sort = "latest", limit = 20, offset = 0 } = filters;
+  const { sort = "latest", limit, offset } = filters;
 
   const where = {
     restaurant_id: restaurantId,
     status: REVIEW_STATUS.VISIBLE,
   };
-
-  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
-  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
 
   let order;
   if (sort === "rating_desc") {
@@ -226,8 +220,8 @@ export const listRestaurantReviewsForMiniApp = async (
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order,
-    limit: parsedLimit,
-    offset: parsedOffset,
+    limit,
+    offset,
   });
 
   return {
@@ -255,8 +249,8 @@ export const listRestaurantReviewsForDashboard = async (
     status,
     from_time, // string
     to_time, // string
-    limit = 20,
-    offset = 0,
+    limit,
+    offset,
   } = filters;
 
   const where = {
@@ -289,9 +283,6 @@ export const listRestaurantReviewsForDashboard = async (
     }
   }
 
-  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
-  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
-
   const { rows, count } = await Review.findAndCountAll({
     where,
     include: [
@@ -300,8 +291,8 @@ export const listRestaurantReviewsForDashboard = async (
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order: [["created_at", "DESC"]],
-    limit: parsedLimit,
-    offset: parsedOffset,
+    limit,
+    offset,
   });
 
   return {

@@ -2,6 +2,8 @@
 import { Router } from "express";
 import { requireCustomer } from "../../../../middlewares/jwtAuthorization.js";
 import notificationController from "../../../../controllers/notification.controller.js";
+import validate from "../../../../middlewares/validate.js";
+import { MiniAppListNotificationsQueryDto } from "../../../../dtos/index.js";
 
 const router = Router();
 
@@ -9,6 +11,7 @@ const router = Router();
 router.get(
   "/",
   ...requireCustomer(),
+  validate(MiniAppListNotificationsQueryDto, "query"),
   notificationController.getMyNotifications
 );
 
@@ -16,6 +19,7 @@ router.get(
 router.get(
   "/unread-count",
   ...requireCustomer(),
+  validate(MiniAppListNotificationsQueryDto, "query"),
   notificationController.getMyUnreadCount
 );
 

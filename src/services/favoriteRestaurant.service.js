@@ -108,11 +108,8 @@ export const isRestaurantFavorite = async (userId, restaurantId) => {
  */
 export const listMyFavoriteRestaurants = async (
   userId,
-  { limit = 20, offset = 0 } = {}
+  { limit, offset } = {}
 ) => {
-  const parsedLimit = Number.isNaN(Number(limit)) ? 20 : Number(limit);
-  const parsedOffset = Number.isNaN(Number(offset)) ? 0 : Number(offset);
-
   const { rows, count } = await FavoriteRestaurant.findAndCountAll({
     where: {
       user_id: userId,
@@ -128,8 +125,8 @@ export const listMyFavoriteRestaurants = async (
       },
     ],
     order: [["created_at", "DESC"]],
-    limit: parsedLimit,
-    offset: parsedOffset,
+    limit,
+    offset,
   });
 
   return {
