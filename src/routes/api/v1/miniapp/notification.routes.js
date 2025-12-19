@@ -19,7 +19,6 @@ router.get(
   notificationController.getMyUnreadCount
 );
 
-
 // Đánh dấu 1 notification là đã đọc
 router.patch(
   "/:id/read",
@@ -34,5 +33,18 @@ router.patch(
   notificationController.markAllMyNotificationsAsRead
 );
 
+// Xoá 1 notification
+router.delete(
+  "/:id",
+  ...requireCustomer(),
+  notificationController.deleteMyNotification
+);
+
+// Xoá tất cả notification đã đọc
+router.delete(
+  "/read-all",
+  ...requireCustomer(),
+  notificationController.deleteAllMyReadNotifications
+);
 
 export default router;

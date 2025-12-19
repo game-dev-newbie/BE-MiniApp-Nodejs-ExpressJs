@@ -24,6 +24,12 @@ export const NOTIFICATION_TYPE = Object.freeze({
   // Review
   REVIEW_CREATED: "REVIEW_CREATED", // có review mới
 
+  // Thay đổi mật khẩu
+  CHANGED_PASSWORD: "CHANGED_PASSWORD",
+
+  // Thay đổi thông tin cá nhân thành công
+  UPDATED_INFO_SUCCESS: "UPDATED_INFO_SUCCESS",
+
   // Dự phòng
   GENERIC: "GENERIC",
 });
@@ -33,6 +39,20 @@ export const NOTIFICATION_CHANNEL = Object.freeze({
   ZNS: "ZNS",
   EMAIL: "EMAIL",
 });
+
+// Loại đối tượng mà thông báo trỏ đến (để FE biết gọi API nào)
+export const NOTIFICATION_TARGET_TYPE = Object.freeze({
+  BOOKING: "BOOKING",
+  REVIEW: "REVIEW",
+  PAYMENT: "PAYMENT",
+  USER: "USER",
+  RESTAURANT_ACCOUNT: "RESTAURANT_ACCOUNT",
+  STAFF: "STAFF",
+});
+
+export const NOTIFICATION_TARGET_TYPE_LIST = Object.freeze(
+  Object.values(NOTIFICATION_TARGET_TYPE)
+);
 
 export const NOTIFICATION_TYPE_LIST = Object.freeze(
   Object.values(NOTIFICATION_TYPE)

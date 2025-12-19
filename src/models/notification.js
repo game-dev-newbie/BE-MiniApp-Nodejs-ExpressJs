@@ -31,6 +31,19 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         defaultValue: "IN_APP",
       },
+      target_type: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      target_id: {
+        type: DataTypes.BIGINT.UNSIGNED,
+        allowNull: true,
+      },
+      meta: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
+
       is_read: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

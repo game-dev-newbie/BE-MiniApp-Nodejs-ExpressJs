@@ -135,7 +135,5 @@ export const listMyFavoriteRestaurants = async (
   return {
     items: rows,
     total: count,
-    limit: parsedLimit,
-    offset: parsedOffset,
   };
 };

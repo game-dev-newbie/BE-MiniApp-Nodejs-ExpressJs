@@ -1,10 +1,20 @@
 // src/routes/api/v1/dashboard/booking.routes.js
 import { Router } from "express";
 import { requireDashboardRoles } from "../../../../middlewares/jwtAuthorization.js";
+import validate from "../../../../middlewares/validate.js";
 import { AUTH_ROLES } from "../../../../constants/index.js";
 import bookingController from "../../../../controllers/booking.controller.js";
+import { DashboardSearchBookingsByCustomerQueryDto } from "../../../../dtos/index.js";
 
 const router = Router();
+
+// Route tìm kiếm booking theo tên khách
+router.get(
+  "/search",
+  ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
+  validate(DashboardSearchBookingsByCustomerQueryDto, "query"),
+  bookingController.searchBookingsByCustomerNameForDashboard
+);
 
 // Lấy danh sách booking (dashboard)
 router.get(
@@ -47,5 +57,6 @@ router.patch(
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   bookingController.noShowBookingDashboard
 );
+
 
 export default router;

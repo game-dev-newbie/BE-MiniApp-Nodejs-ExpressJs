@@ -3,6 +3,10 @@
 import { catchAsync } from "../utils/catchAsync.js";
 import * as favoriteService from "../services/favoriteRestaurant.service.js";
 import { FavoriteRestaurantResponse } from "../dtos/index.js";
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.util.js";
 
 class FavoriteRestaurantController {
   /**
@@ -46,7 +50,7 @@ class FavoriteRestaurantController {
    */
   getMyFavorites = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const { limit, offset } = req.query;
+    const { limit, offset, page } = parsePagination(req.query);
 
     const result = await favoriteService.listMyFavoriteRestaurants(userId, {
       limit,
@@ -60,11 +64,12 @@ class FavoriteRestaurantController {
       message: "Lấy danh sách nhà hàng yêu thích thành công",
       data: {
         items,
-        pagination: {
+        pagination: buildPaginationMeta({
           total: result.total,
-          limit: result.limit,
-          offset: result.offset,
-        },
+          limit,
+          offset,
+          page,
+        }),
       },
     });
   });

@@ -81,7 +81,7 @@ router.post(
 
 // Upload ảnh avatar tùy role của account (OWNER/STAFF)
 router.post(
-  "/images/restaurants-account/avatar",
+  "/images/restaurant-accounts/avatar",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   (req, res, next) => {
     req.query.scope = "restaurant_account_avatar";

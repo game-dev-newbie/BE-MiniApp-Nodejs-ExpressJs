@@ -4,6 +4,10 @@ import models from "../models/index.js";
 import { Op } from "sequelize";
 import { AppError } from "../utils/appError.js";
 import { TABLE_STATUS } from "../constants/index.js";
+import {
+  safeUnlinkByWebPath,
+  isSameWebPath,
+} from "../utils/fileStorage.util.js";
 
 const { RestaurantAccount, RestaurantTable } = models;
 
@@ -50,10 +54,13 @@ const getTableUnderAccountRestaurant = async (accountId, tableId) => {
 // 1) LIST TẤT CẢ BÀN
 // =====================
 
-export const listTablesOfMyRestaurant = async (accountId) => {
+export const listTablesOfMyRestaurant = async (
+  accountId,
+  { limit, offset } = {}
+) => {
   const account = await getAccountWithRestaurant(accountId);
 
-  const tables = await RestaurantTable.findAll({
+  const { rows, count } = await RestaurantTable.findAndCountAll({
     where: {
       restaurant_id: account.restaurant_id,
       // chỉ lấy bàn chưa bị "xoá mềm"
@@ -61,6 +68,8 @@ export const listTablesOfMyRestaurant = async (accountId) => {
         [Op.ne]: TABLE_STATUS.INACTIVE,
       },
     },
+    limit,
+    offset,
     order: [
       ["status", "ASC"],
       ["name", "ASC"],
@@ -68,7 +77,7 @@ export const listTablesOfMyRestaurant = async (accountId) => {
     ],
   });
 
-  return tables;
+  return { items: rows, total: count };
 };
 
 // =====================
@@ -109,6 +118,7 @@ export const createTable = async (accountId, payload) => {
 
 export const updateTable = async (accountId, tableId, payload) => {
   const { table } = await getTableUnderAccountRestaurant(accountId, tableId);
+  const oldView = table.view_image_url;
 
   const fields = [
     "name",
@@ -126,6 +136,21 @@ export const updateTable = async (accountId, tableId, payload) => {
   }
 
   await table.save();
+
+  // Nếu client gửi view_image_url mới (kể cả null) -> xem như có ý định thay đổi ảnh
+  if (payload.view_image_url !== undefined) {
+    const newView = table.view_image_url;
+
+    // Case 1: đổi sang ảnh mới khác ảnh cũ -> xoá ảnh cũ
+    if (oldView && newView && !isSameWebPath(oldView, newView)) {
+      await safeUnlinkByWebPath(oldView);
+    }
+
+    // Case 2: xoá ảnh (set null) -> xoá file cũ
+    if (oldView && !newView) {
+      await safeUnlinkByWebPath(oldView);
+    }
+  }
   return table;
 };
 

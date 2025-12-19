@@ -1,6 +1,10 @@
 // src/controllers/review.controller.js
 
 import { catchAsync } from "../utils/catchAsync.js";
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.util.js";
 import * as reviewService from "../services/review.service.js";
 import ReviewResponse from "../dtos/responses/review.response.js";
 
@@ -35,7 +39,9 @@ class ReviewController {
    */
   getMyReviews = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const { reply_status, limit, offset } = req.query;
+    const { reply_status } = req.query;
+
+    const { limit, offset, page } = parsePagination(req.query);
 
     const result = await reviewService.listMyReviews(userId, {
       reply_status,
@@ -52,11 +58,12 @@ class ReviewController {
       message: "Lấy danh sách review của user thành công",
       data: {
         items,
-        pagination: {
+        pagination: buildPaginationMeta({
           total: result.total,
-          limit: result.limit,
-          offset: result.offset,
-        },
+          limit,
+          offset,
+          page,
+        }),
       },
     });
   });
@@ -89,9 +96,9 @@ class ReviewController {
       status,
       from_time,
       to_time,
-      limit,
-      offset,
     } = req.query;
+
+    const { limit, offset, page } = parsePagination(req.query);
 
     const result = await reviewService.listRestaurantReviewsForDashboard(
       restaurantId,
@@ -114,11 +121,12 @@ class ReviewController {
       message: "Lấy danh sách review của nhà hàng (dashboard) thành công",
       data: {
         items,
-        pagination: {
+        pagination: buildPaginationMeta({
           total: result.total,
-          limit: result.limit,
-          offset: result.offset,
-        },
+          limit,
+          offset,
+          page,
+        }),
       },
     });
   });

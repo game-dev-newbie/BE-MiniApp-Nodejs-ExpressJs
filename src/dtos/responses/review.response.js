@@ -1,8 +1,7 @@
 // src/dtos/responses/review.response.js
 
-import UserResponse from "./user.response.js";
-import RestaurantResponse from "./restaurant.response.js";
-import BookingResponse from "./booking.response.js";
+import { UserResponse, RestaurantResponse, BookingResponse } from "../index.js";
+
 import time from "../../utils/time.js";
 
 class ReviewResponse {

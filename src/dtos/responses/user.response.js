@@ -18,6 +18,7 @@ class UserResponse {
       display_name,
       email,
       phone,
+      password_hash,
       avatar_url,
       created_at,
       updated_at,

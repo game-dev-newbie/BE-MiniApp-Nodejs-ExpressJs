@@ -2,6 +2,7 @@ CREATE TABLE `users` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `display_name` varchar(255),
   `email` varchar(255) COMMENT 'UNIQUE',
+  `password_hash` varchar(255),
   `phone` varchar(255),
   `avatar_url` varchar(255),
   `created_at` datetime,

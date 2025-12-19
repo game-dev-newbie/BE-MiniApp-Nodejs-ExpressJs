@@ -1,9 +1,13 @@
 // src/controllers/restaurant.controller.js
 
 import * as restaurantService from "../services/restaurant.service.js";
-import RestaurantResponse from "../dtos/responses/restaurant.response.js";
+import { RestaurantResponse, ReviewResponse } from "../dtos/index.js";
 import { catchAsync } from "../utils/catchAsync.js";
 import { AppError } from "../utils/appError.js";
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.util.js";
 
 class RestaurantController {
   // ----- DASHBOARD -----
@@ -118,11 +122,11 @@ class RestaurantController {
     });
   });
 
-
   getRestaurantReviewsForMiniApp = catchAsync(async (req, res, next) => {
-    const restaurantId = req.params;
-    const { sort, limit, offset } = req.query;
+    const { id: restaurantId } = req.params;
+    const { sort } = req.query;
 
+    const { limit, offset, page } = parsePagination(req.query);
     const result = await restaurantService.getRestaurantReviewsForMiniApp(
       restaurantId,
       { sort, limit, offset }
@@ -137,11 +141,57 @@ class RestaurantController {
       message: "Lấy danh sách review của nhà hàng (miniapp) thành công",
       data: {
         items,
-        pagination: {
+        pagination: buildPaginationMeta({
           total: result.total,
-          limit: result.limit,
-          offset: result.offset,
-        },
+          limit,
+          offset,
+          page,
+        }),
+      },
+    });
+  });
+  /**
+   * GET /api/v1/miniapp/restaurants/search
+   * Query:
+   *  - q: keyword (bắt buộc)
+   *  - page/page_size hoặc limit/offset
+   */
+  searchMiniApp = catchAsync(async (req, res, next) => {
+    const { q } = req.query;
+
+    // Chuẩn hoá tham số phân trang từ query (?page=, ?page_size=, ?limit=, ?offset=)
+    const { limit, offset, page } = parsePagination(req.query);
+
+    // Gọi service để lấy dữ liệu thô
+    const result = await restaurantService.searchRestaurantsForMiniApp(
+      {
+        keyword: q,
+        limit,
+        offset,
+      }
+    );
+
+    // Format DTO response ở controller
+    // Tuỳ file restaurant.response.js của bạn, chỉnh lại method cho khớp
+    const items = result.items.map((restaurant) =>
+      // ví dụ:
+      // RestaurantResponse.toMiniAppListItem(restaurant)
+      RestaurantResponse.toMiniappCard(restaurant)
+    );
+
+    const meta = buildPaginationMeta({
+      total,
+      limit,
+      offset,
+      page,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Tìm kiếm nhà hàng thành công",
+      data: {
+        items,
+        meta,
       },
     });
   });

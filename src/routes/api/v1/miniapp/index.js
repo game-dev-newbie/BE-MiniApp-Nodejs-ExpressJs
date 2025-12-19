@@ -9,6 +9,7 @@ import notificationMiniAppRoutes from "./notification.routes.js";
 import reviewMiniAppRoutes from "./review.routes.js";
 import favoriteRestaurantMiniAppRoutes from "./favoriteRestaurant.routes.js";
 import uploadRoutes from "./upload.routes.js";
+import userMiniAppRoutes from "./user.routes.js";
 
 const router = Router();
 
@@ -32,5 +33,8 @@ router.use("/favorites", favoriteRestaurantMiniAppRoutes);
 
 // Route dùng để upload ảnh ở miniapp
 router.use("/uploads", uploadRoutes);
+
+// Route dùng riêng cho user đăng kí tài khoản
+router.use("/users", userMiniAppRoutes);
 
 export default router;

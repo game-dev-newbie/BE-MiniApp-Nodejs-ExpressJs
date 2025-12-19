@@ -3,10 +3,11 @@
 import { Op } from "sequelize";
 import models from "../models/index.js";
 import { AppError } from "../utils/appError.js";
-import time from "../utils/time.js";
-import { REVIEW_STATUS } from "../constants/index.js";
+import { REVIEW_STATUS, RESTAURANT_IMAGE_TYPE } from "../constants/index.js";
+import { buildRestaurantSearchFields } from "../utils/search.util.js";
 
-const { Restaurant, RestaurantAccount, RestaurantImage } = models;
+const { Restaurant, RestaurantAccount, RestaurantImage, User, Booking } =
+  models;
 
 // -------- COMMON --------
 
@@ -77,7 +78,17 @@ export const updateRestaurantById = async (restaurantId, payload) => {
     }
   }
 
-  // TODO sau này: nếu name/address/tags đổi thì cập nhật search_*
+  // Sau khi gán xong name/address/tags mới,
+  // build lại search_* từ giá trị hiện tại trên model
+  const searchFields = buildRestaurantSearchFields({
+    name: restaurant.name,
+    address: restaurant.address,
+    tags: restaurant.tags,
+  });
+
+  restaurant.search_name = searchFields.search_name;
+  restaurant.search_address = searchFields.search_address;
+  restaurant.search_tags = searchFields.search_tags;
 
   await restaurant.save();
   return restaurant;
@@ -96,7 +107,7 @@ export const getTopRatedRestaurants = async (limit = 5) => {
         model: RestaurantImage,
         as: "RestaurantImages",
         required: false,
-        where: { type: "COVER" }, // sau này đổi dùng IMAGE_TYPES.COVER nếu có constants
+        where: { type: RESTAURANT_IMAGE_TYPE.COVER },
         attributes: ["id", "file_path", "type", "caption", "is_primary"],
       },
     ],
@@ -120,7 +131,7 @@ export const getTopFavoriteRestaurants = async (limit = 5) => {
         model: RestaurantImage,
         as: "RestaurantImages",
         required: false,
-        where: { type: "COVER" },
+        where: { type: RESTAURANT_IMAGE_TYPE.COVER },
         attributes: ["id", "file_path", "type", "caption", "is_primary"],
       },
     ],
@@ -206,7 +217,46 @@ export const getRestaurantReviewsForMiniApp = async (
   return {
     items: rows,
     total: count,
-    limit: parsedLimit,
-    offset: parsedOffset,
+  };
+};
+
+/**
+ * Search nhà hàng cho miniapp.
+ * Service chỉ:
+ *  - nhận keyword + limit + offset
+ *  - query DB
+ *  - trả rows + total + limit + offset
+ * Không format DTO, không build meta.
+ */
+export const searchRestaurantsForMiniApp = async ({
+  keyword,
+  limit,
+  offset,
+}) => {
+  const q = (keyword || "").trim().toLowerCase();
+
+  const where = {
+    is_active: true,
+    [Op.or]: [
+      { search_name: { [Op.like]: `%${q}%` } },
+      { search_address: { [Op.like]: `%${q}%` } },
+      { search_tags: { [Op.like]: `%${q}%` } },
+    ],
+  };
+
+  const { rows, count } = await Restaurant.findAndCountAll({
+    where,
+    limit,
+    offset,
+    order: [
+      ["favorite_count", "DESC"],
+      ["average_rating", "DESC"],
+      ["id", "DESC"],
+    ],
+  });
+
+  return {
+    items: rows,
+    total: count,
   };
 };

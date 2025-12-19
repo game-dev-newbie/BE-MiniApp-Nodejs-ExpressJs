@@ -1,6 +1,6 @@
 // src/utils/pagination.util.js
 
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 
 /**
@@ -13,12 +13,12 @@ export const parsePagination = (query = {}) => {
   const { page, page_size, limit, offset } = query;
 
   // Ưu tiên page/page_size, nếu không có thì dùng limit/offset
-  let pageNumber = Number(page) || 0;
+  let pageNumber = Number(page) || 1;
   let pageSize = Number(page_size) || Number(limit) || DEFAULT_LIMIT;
   let offsetNumber = Number(offset) || 0;
 
   // Chuẩn hoá
-  if (pageNumber < 0) pageNumber = 0;
+  if (pageNumber < 0) pageNumber = 1;
 
   if (pageSize <= 0 || Number.isNaN(pageSize)) {
     pageSize = DEFAULT_LIMIT;
@@ -29,13 +29,13 @@ export const parsePagination = (query = {}) => {
 
   // Nếu client dùng page/page_size thì tính offset từ đó
   if (page !== undefined || page_size !== undefined) {
-    offsetNumber = pageNumber * pageSize;
+    offsetNumber = (pageNumber - 1) * pageSize;
   } else {
     if (offsetNumber < 0 || Number.isNaN(offsetNumber)) {
       offsetNumber = 0;
     }
     // tính lại pageNumber cho meta
-    pageNumber = Math.floor(offsetNumber / pageSize);
+    pageNumber = Math.floor(offsetNumber / pageSize) + 1;
   }
 
   return {
@@ -50,7 +50,7 @@ export const parsePagination = (query = {}) => {
  */
 export const buildPaginationMeta = ({ total, limit, offset, page }) => {
   const currentPage = page ?? Math.floor(offset / limit);
-  const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
+  const totalPages = limit > 0 ? Math.ceil(total / limit) : 1;
 
   return {
     total,

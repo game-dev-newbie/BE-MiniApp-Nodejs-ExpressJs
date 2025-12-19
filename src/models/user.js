@@ -24,6 +24,10 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
       },
       email: DataTypes.STRING,
+      password_hash: {
+        type: DataTypes.STRING,
+        allowNull: true, // cho phép null để giữ backward compatible
+      },
       phone: DataTypes.STRING,
       avatar_url: DataTypes.STRING,
     },

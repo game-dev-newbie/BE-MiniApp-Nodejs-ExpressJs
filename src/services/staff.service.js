@@ -60,14 +60,19 @@ const getStaffUnderOwner = async (ownerAccountId, staffAccountId) => {
 // 1) LẤY DANH SÁCH STAFF
 // =======================
 
-export const listStaffOfOwnerRestaurant = async (ownerAccountId) => {
+export const listStaffOfOwnerRestaurant = async (
+  ownerAccountId,
+  { limit, offset } = {}
+) => {
   const owner = await getOwnerAccount(ownerAccountId);
 
-  const staffs = await RestaurantAccount.findAll({
+  const { rows, count } = await RestaurantAccount.findAndCountAll({
     where: {
       restaurant_id: owner.restaurant_id,
       role: RESTAURANT_ACCOUNT_ROLE.STAFF,
     },
+    limit,
+    offset,
     order: [
       ["status", "ASC"],
       ["is_locked", "ASC"],
@@ -75,7 +80,7 @@ export const listStaffOfOwnerRestaurant = async (ownerAccountId) => {
     ],
   });
 
-  return staffs;
+  return { items: rows, total: count };
 };
 
 // =======================

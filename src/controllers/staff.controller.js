@@ -2,6 +2,10 @@
 
 import * as staffService from "../services/staff.service.js";
 import { catchAsync } from "../utils/catchAsync.js";
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.util.js";
 import RestaurantAccountResponse from "../dtos/responses/restaurantAccount.response.js";
 
 class StaffController {
@@ -9,18 +13,29 @@ class StaffController {
   listStaff = catchAsync(async (req, res) => {
     const ownerAccountId = req.restaurantAccount.id;
 
-    const staffAccounts = await staffService.listStaffOfOwnerRestaurant(
-      ownerAccountId
+    const { limit, offset, page } = parsePagination(req.query);
+
+    const result = await staffService.listStaffOfOwnerRestaurant(
+      ownerAccountId,
+      { limit, offset }
     );
 
-    const items = staffAccounts.map((acc) =>
+    const items = result.items.map((acc) =>
       RestaurantAccountResponse.fromModel(acc)
     );
 
     return res.status(200).json({
       success: true,
       message: "Lấy danh sách nhân viên thành công",
-      data: { items },
+      data: {
+        items,
+        pagination: buildPaginationMeta({
+          total: result.total,
+          limit,
+          offset,
+          page,
+        }),
+      },
     });
   });
 

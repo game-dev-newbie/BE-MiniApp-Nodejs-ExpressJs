@@ -1,24 +1,40 @@
 // src/controllers/restaurantTable.controller.js
 
 import * as restaurantTableService from "../services/restaurantTable.service.js";
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.util.js";
+
 import { catchAsync } from "../utils/catchAsync.js";
-import RestaurantTableResponse from "../dtos/responses/restaurantTable.response.js";
+import { RestaurantTableResponse } from "../dtos/index.js";
 
 class RestaurantTableController {
   // GET /dashboard/tables
   listMyTables = catchAsync(async (req, res) => {
     const accountId = req.restaurantAccount.id;
 
-    const tables = await restaurantTableService.listTablesOfMyRestaurant(
-      accountId
+    const { limit, offset, page } = parsePagination(req.query);
+
+    const result = await restaurantTableService.listTablesOfMyRestaurant(
+      accountId,
+      { limit, offset }
     );
 
-    const items = RestaurantTableResponse.fromList(tables);
+    const items = RestaurantTableResponse.fromList(result.items);
 
     return res.status(200).json({
       success: true,
       message: "Lấy danh sách bàn của nhà hàng thành công",
-      data: { items },
+      data: {
+        items,
+        pagination: buildPaginationMeta({
+          total: result.total,
+          limit,
+          offset,
+          page,
+        }),
+      },
     });
   });
 

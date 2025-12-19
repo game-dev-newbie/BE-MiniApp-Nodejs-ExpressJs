@@ -1,8 +1,9 @@
 // src/constants/index.js
-export * from './bookingStatus.js'
-export * from './notification.js'
-export * from './paymentStatus.js'
-export * from './reviewStatus.js'
-export * from './tableStatus.js'
-export * from './restaurantAccount.js'
-export * from './auth.js'
+export * from "./bookingStatus.js";
+export * from "./notification.js";
+export * from "./paymentStatus.js";
+export * from "./reviewStatus.js";
+export * from "./tableStatus.js";
+export * from "./restaurantAccount.js";
+export * from "./auth.js";
+export * from "./restaurantImage.js";

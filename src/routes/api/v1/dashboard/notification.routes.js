@@ -34,5 +34,18 @@ router.patch(
   notificationController.markAllRestaurantNotificationsAsRead
 );
 
+// Xoá 1 notification
+router.delete(
+  "/:id",
+  ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
+  notificationController.deleteRestaurantNotification
+);
+
+// Xoá tất cả notification đã đọc
+router.delete(
+  "/read-all",
+  ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
+  notificationController.deleteAllRestaurantReadNotifications
+);
 
 export default router;

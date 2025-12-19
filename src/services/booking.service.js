@@ -7,9 +7,12 @@ import {
   BOOKING_STATUS,
   PAYMENT_STATUS,
   TABLE_STATUS,
+  NOTIFICATION_TYPE,
+  NOTIFICATION_TARGET_TYPE,
 } from "../constants/index.js";
 import time from "../utils/time.js";
 import * as paymentService from "../services/payment.service.js";
+import * as notificationService from "../services/notification.service.js";
 
 const { Booking, Restaurant, RestaurantTable, User, RestaurantAccount } =
   models;
@@ -232,6 +235,26 @@ export const createBookingForUser = async (userId, payload) => {
     note: note || null,
   });
 
+  // Gửi notification cho khách (miniapp)
+  await notificationService.createNotification({
+    userId: user.id,
+    type: NOTIFICATION_TYPE.BOOKING_CREATED,
+    title: "Đặt bàn thành công",
+    message: `Bạn đã tạo booking mới tại ${restaurant.name} vào lúc ${booking.created_at}.`,
+  });
+
+  // Gửi notification cho dashboard (nhà hàng)
+  await notificationService.createNotification({
+    restaurantId: restaurant.id,
+    type: NOTIFICATION_TYPE.BOOKING_CREATED,
+    title: "Có booking mới",
+    message: `Khách ${
+      customer_name || user.display_name || user.phone || "ẩn danh"
+    } vừa đặt bàn vào lúc ${booking.created_at}.`,
+    targetType: NOTIFICATION_TARGET_TYPE.BOOKING,
+    targetId: booking.id,
+  });
+
   return booking;
 };
 
@@ -240,7 +263,7 @@ export const createBookingForUser = async (userId, payload) => {
 // ==================================
 
 export const listBookingsForUser = async (userId, filters = {}) => {
-  const { category } = filters; // "upcoming" | "history" | "cancelled"
+  const { category, limit, offset } = filters; // "upcoming" | "history" | "cancelled"
 
   const where = {
     user_id: userId,
@@ -248,7 +271,11 @@ export const listBookingsForUser = async (userId, filters = {}) => {
 
   const now = new Date();
 
-  switch (category) {
+  switch (
+    String(category || "all")
+      .trim()
+      .toLowerCase()
+  ) {
     case "upcoming": {
       // Sắp tới: thời gian còn ở tương lai, chưa huỷ, chưa no_show, chưa complete
       where.status = {
@@ -279,12 +306,14 @@ export const listBookingsForUser = async (userId, filters = {}) => {
     }
   }
 
-  const bookings = await Booking.findAll({
+  const { rows, count } = await Booking.findAndCountAll({
     where,
     order: [["booking_time", "DESC"]],
+    limit,
+    offset,
   });
 
-  return bookings;
+  return { items: rows, total: count };
 };
 
 export const getBookingDetailForUser = async (userId, bookingId) => {
@@ -299,6 +328,7 @@ export const getBookingDetailForUser = async (userId, bookingId) => {
 
 export const cancelBookingByUser = async (userId, bookingId) => {
   const booking = await Booking.findByPk(bookingId);
+  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
 
   if (!booking || booking.user_id !== userId) {
     throw new AppError("Booking không tồn tại", 404);
@@ -318,6 +348,22 @@ export const cancelBookingByUser = async (userId, bookingId) => {
 
   booking.status = BOOKING_STATUS.CANCELLED;
   await booking.save();
+
+  // Thông báo cho khách
+  await notificationService.createNotification({
+    userId,
+    type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
+    title: "Huỷ booking thành công",
+    message: `Bạn đã huỷ booking của mình tại nhà hàng ${restaurant.name}.`,
+  });
+
+  // Thông báo cho nhà hàng
+  await notificationService.createNotification({
+    restaurantId: booking.restaurant_id,
+    type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
+    title: "Khách huỷ booking",
+    message: "Một booking của khách đã bị huỷ.",
+  });
 
   return booking;
 };
@@ -463,6 +509,22 @@ export const updateBookingByCustomer = async (userId, bookingId, payload) => {
 
   await booking.save();
 
+  // Thông báo cho khách
+  await notificationService.createNotification({
+    userId,
+    type: NOTIFICATION_TYPE.BOOKING_UPDATED,
+    title: "Cập nhật booking thành công",
+    message: `Thông tin đặt bàn của bạn tại ${restaurant.name} đã được cập nhật.`,
+  });
+
+  // Thông báo cho nhà hàng
+  await notificationService.createNotification({
+    restaurantId: booking.restaurant_id,
+    type: NOTIFICATION_TYPE.BOOKING_UPDATED,
+    title: "Booking được cập nhật",
+    message: `Khách có tên ${customer_nam} vừa cập nhật booking.`,
+  });
+
   return booking;
 };
 
@@ -477,7 +539,7 @@ export const listBookingsForRestaurant = async (accountId, filters = {}) => {
     restaurant_id: account.restaurant_id,
   };
 
-  const { status, from_date, to_date } = filters;
+  const { status, from_date, to_date, limit, offset } = filters;
 
   if (status) {
     where.status = status;
@@ -490,12 +552,14 @@ export const listBookingsForRestaurant = async (accountId, filters = {}) => {
     if (start) where.booking_time[Op.gte] = start;
     if (end) where.booking_time[Op.lte] = end;
   }
-  const bookings = await Booking.findAll({
+  const { rows, count } = await Booking.findAndCountAll({
     where,
     order: [["booking_time", "ASC"]],
+    limit,
+    offset,
   });
 
-  return bookings;
+  return { items: rows, total: count };
 };
 
 export const getBookingDetailForRestaurant = async (accountId, bookingId) => {
@@ -509,6 +573,7 @@ export const getBookingDetailForRestaurant = async (accountId, bookingId) => {
 
 export const confirmBooking = async (accountId, bookingId) => {
   const { booking } = await getBookingUnderRestaurant(accountId, bookingId);
+  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
 
   if (booking.status !== BOOKING_STATUS.PENDING) {
     throw new AppError(
@@ -520,11 +585,20 @@ export const confirmBooking = async (accountId, bookingId) => {
   booking.status = BOOKING_STATUS.CONFIRMED;
   await booking.save();
 
+  // Thông báo cho khách
+  await notificationService.createNotification({
+    userId: booking.user_id,
+    type: NOTIFICATION_TYPE.BOOKING_CONFIRMED,
+    title: "Booking được xác nhận",
+    message: `Nhà hàng: ${restaurant.name} đã xác nhận yêu cầu đặt bàn của bạn.`,
+  });
+
   return booking;
 };
 
 export const cancelBookingByRestaurant = async (accountId, bookingId) => {
   const { booking } = await getBookingUnderRestaurant(accountId, bookingId);
+  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
 
   if (
     ![BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED].includes(booking.status)
@@ -541,11 +615,20 @@ export const cancelBookingByRestaurant = async (accountId, bookingId) => {
   booking.status = BOOKING_STATUS.CANCELLED;
   await booking.save();
 
+  // Thông báo cho khách
+  await notificationService.createNotification({
+    userId: booking.user_id,
+    type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
+    title: "Booking bị huỷ",
+    message: `Nhà hàng: ${restaurant.name} đã huỷ booking của bạn.`,
+  });
+
   return booking;
 };
 
 export const completeBooking = async (accountId, bookingId) => {
   const { booking } = await getBookingUnderRestaurant(accountId, bookingId);
+  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
 
   if (booking.status !== BOOKING_STATUS.CONFIRMED) {
     throw new AppError(
@@ -557,12 +640,21 @@ export const completeBooking = async (accountId, bookingId) => {
   booking.status = BOOKING_STATUS.COMPLETED;
   await booking.save();
 
+  // Thông báo cho khách
+  await notificationService.createNotification({
+    userId: booking.user_id,
+    type: NOTIFICATION_TYPE.BOOKING_CHECKED_IN,
+    title: "Check-in thành công",
+    message: `Nhà hàng: ${restaurant.name} đã check-in cho bạn. Chúc bạn dùng bữa ngon miệng!`,
+  });
+
   return booking;
 };
 
 export const markNoShow = async (accountId, bookingId) => {
   // Đảm bảo account thuộc đúng nhà hàng và booking thuộc về nhà hàng đó
   const { booking } = await getBookingUnderRestaurant(accountId, bookingId);
+  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
 
   // Chỉ cho phép đánh dấu NO_SHOW khi đã CONFIRMED
   if (booking.status !== BOOKING_STATUS.CONFIRMED) {
@@ -590,7 +682,53 @@ export const markNoShow = async (accountId, bookingId) => {
   booking.status = BOOKING_STATUS.NO_SHOW;
   await booking.save();
 
-  // Sau này muốn notify cho khách thì gắn thêm createNotification() ở đây
+  // Thông báo cho khách
+  await notificationService.createNotification({
+    userId: booking.user_id,
+    type: NOTIFICATION_TYPE.BOOKING_NO_SHOW,
+    title: "Bạn đã không đến nhà hàng",
+    message: `Booking của bạn đã bị nhà hàng ${restaurant.name} đánh dấu là không đến (no-show). Nếu đây là nhầm lẫn, hãy liên hệ nhà hàng.`,
+  });
 
   return booking;
+};
+
+/**
+ * DASHBOARD – search booking theo customer_name của khách
+ * @param {number} restaurantId - nhà hàng hiện tại (lấy từ account)
+ * @param {object} options
+ * @param {string} options.keyword - từ khoá search
+ * @param {number} options.limit
+ * @param {number} options.offset
+ */
+export const searchBookingsByCustomerNameForDashboard = async (
+  restaurantId,
+  { q, limit, offset } = {}
+) => {
+  if (!restaurantId) {
+    throw new AppError("Thiếu restaurantId để tìm kiếm booking", 400);
+  }
+
+  const keyword = (q || "").trim();
+  if (!keyword) {
+    // không có từ khoá thì coi như không trả gì (tránh scan full bảng)
+    throw new AppError("Thiếu từ khoá tìm kiếm", 400);
+  }
+
+  const where = {
+    restaurant_id: restaurantId,
+    customer_name: { [Op.like]: `%${q}%` },
+  };
+
+  const { rows, count } = await Booking.findAndCountAll({
+    where,
+    order: [
+      ["booking_time", "DESC"],
+      ["id", "DESC"],
+    ],
+    limit,
+    offset,
+  });
+
+  return { items: rows, total: count };
 };

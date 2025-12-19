@@ -2,7 +2,11 @@
 
 import { catchAsync } from "../utils/catchAsync.js";
 import * as notificationService from "../services/notification.service.js";
-import NotificationResponse from "../dtos/responses/notification.response.js";
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.util.js";
+import { NotificationResponse } from "../dtos/index.js";
 
 class NotificationController {
   /**
@@ -16,11 +20,11 @@ class NotificationController {
       read_status,
       is_read, // để back-compat, nhưng FE mới nên dùng read_status
       type,
-      limit,
-      offset,
       from_time,
       to_time,
     } = req.query;
+
+    const { limit, offset, page } = parsePagination(req.query);
 
     const result = await notificationService.getUserNotifications(userId, {
       read_status,
@@ -39,11 +43,12 @@ class NotificationController {
       message: "Lấy danh sách thông báo miniapp thành công",
       data: {
         items,
-        pagination: {
+        pagination: buildPaginationMeta({
           total: result.total,
-          limit: result.limit,
-          offset: result.offset,
-        },
+          limit,
+          offset,
+          page,
+        }),
       },
     });
   });
@@ -108,6 +113,46 @@ class NotificationController {
   });
 
   /**
+   * MINIAPP: xoá 1 notification
+   * DELETE /miniapp/notifications/:id
+   */
+  deleteMyNotification = catchAsync(async (req, res, next) => {
+    const userId = req.user.id;
+    const notificationId = req.params.id;
+
+    const result = await notificationService.deleteUserNotification(
+      userId,
+      notificationId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Xoá thông báo thành công",
+      data: result,
+    });
+  });
+
+  /**
+   * MINIAPP: xoá tất cả notification ĐÃ ĐỌC
+   * DELETE /miniapp/notifications/read-all
+   */
+  deleteAllMyReadNotifications = catchAsync(async (req, res, next) => {
+    const userId = req.user.id;
+
+    const result = await notificationService.deleteAllReadUserNotifications(
+      userId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Xoá tất cả thông báo đã đọc thành công",
+      data: {
+        deleted_rows: result.deletedRows,
+      },
+    });
+  });
+
+  /**
    * DASHBOARD: lấy danh sách notification của nhà hàng
    * GET /dashboard/notifications?is_read=false&type=BOOKING_CREATED&limit=20&offset=0
    */
@@ -118,11 +163,11 @@ class NotificationController {
       read_status,
       is_read, // back-compat
       type,
-      limit,
-      offset,
       from_time,
       to_time,
     } = req.query;
+
+    const { limit, offset, page } = parsePagination(req.query);
 
     const result = await notificationService.getRestaurantNotifications(
       restaurantId,
@@ -144,11 +189,12 @@ class NotificationController {
       message: "Lấy danh sách thông báo dashboard thành công",
       data: {
         items,
-        pagination: {
+        pagination: buildPaginationMeta({
           total: result.total,
-          limit: result.limit,
-          offset: result.offset,
-        },
+          limit,
+          offset,
+          page,
+        }),
       },
     });
   });
@@ -212,6 +258,47 @@ class NotificationController {
       message: "Lấy số thông báo chưa đọc của nhà hàng thành công",
       data: {
         unread_count: unreadCount,
+      },
+    });
+  });
+
+  /**
+   * DASHBOARD: xoá 1 notification của nhà hàng
+   * DELETE /dashboard/notifications/:id
+   */
+  deleteRestaurantNotification = catchAsync(async (req, res, next) => {
+    const restaurantId = req.restaurantAccount.restaurant_id;
+    const notificationId = req.params.id;
+
+    const result = await notificationService.deleteRestaurantNotification(
+      restaurantId,
+      notificationId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Xoá thông báo thành công",
+      data: result,
+    });
+  });
+
+  /**
+   * DASHBOARD: xoá tất cả notification ĐÃ ĐỌC của nhà hàng
+   * DELETE /dashboard/notifications/read-all
+   */
+  deleteAllRestaurantReadNotifications = catchAsync(async (req, res, next) => {
+    const restaurantId = req.restaurantAccount.restaurant_id;
+
+    const result =
+      await notificationService.deleteAllReadRestaurantNotifications(
+        restaurantId
+      );
+
+    return res.status(200).json({
+      success: true,
+      message: "Xoá tất cả thông báo đã đọc của nhà hàng thành công",
+      data: {
+        deleted_rows: result.deletedRows,
       },
     });
   });

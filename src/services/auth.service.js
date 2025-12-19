@@ -9,11 +9,18 @@ import {
   AUTH_ROLES,
   RESTAURANT_ACCOUNT_ROLE,
   RESTAURANT_ACCOUNT_STATUS,
+  TOKEN_TYPES,
 } from "../constants/index.js";
 import { hashPassword, comparePassword } from "../utils/password.util.js";
 //import { fetchZaloProfile, fetchZaloPhoneNumber } from "../utils/zalo.util.js";
 
-import { issueTokens } from "./token.service.js";
+import {
+  issueTokens,
+  refreshTokens,
+  revokeTokenById,
+} from "./token.service.js";
+import { verifyRefreshToken } from "../utils/jwt.js";
+import { buildRestaurantSearchFields } from "../utils/search.util.js";
 
 const { User, UserAuthProvider, Restaurant, RestaurantAccount } = models;
 
@@ -64,6 +71,11 @@ export const registerDashboardOwner = async (payload) => {
   // 3. Tạo invite_code ngẫu nhiên
   const code = crypto.randomBytes(4).toString("hex"); // 8 ký tự hex
 
+  const searchFields = buildRestaurantSearchFields({
+    restaurant_name,
+    restaurant_address,
+  });
+
   // 4. Tạo restaurant + account trong 1 transaction
   const { restaurant, account } = await sequelize.transaction(async (t) => {
     const restaurant = await Restaurant.create(
@@ -74,6 +86,7 @@ export const registerDashboardOwner = async (payload) => {
         description: restaurant_description,
         is_active: true, // Mặc định trong schema là true
         invite_code: code,
+        ...searchFields,
       },
       { transaction: t }
     );
@@ -327,4 +340,204 @@ export const loginWithZalo = async (payload) => {
 
   // 4. Chuẩn hóa response bằng DTO
   return { user, tokens };
+};
+// =========================
+// 5) MINIAPP LOCAL REGISTER (email + password)
+// =========================
+
+/**
+ * Đăng ký tài khoản khách hàng cho miniapp (local account)
+ * - Tạo user với password_hash
+ * - Không phụ thuộc Zalo
+ * - Trả về user + tokens như Zalo login
+ */
+export const registerMiniAppLocal = async (payload) => {
+  const { display_name, email, password, phone } = payload;
+
+  // 1. Kiểm tra email đã tồn tại chưa
+  const existing = await User.findOne({ where: { email } });
+  if (existing) {
+    // Có thể refine sau: nếu existing.password_hash = null thì cho phép "set password"
+    throw new AppError("Email đã được sử dụng cho tài khoản khác", 409);
+  }
+
+  // 2. Hash mật khẩu
+  const passwordHash = await hashPassword(password);
+
+  // 3. Tạo user mới
+  const user = await User.create({
+    display_name,
+    email,
+    phone: phone || null,
+    password_hash: passwordHash,
+  });
+
+  // 4. Cấp token cho miniapp
+  const tokens = await issueTokens({
+    subjectId: user.id,
+    subjectType: SUBJECT_TYPES.CUSTOMER,
+    role: AUTH_ROLES.CUSTOMER,
+    provider: AUTH_PROVIDERS.LOCAL,
+  });
+
+  return { user, tokens };
+};
+
+// =========================
+// 6) MINIAPP LOCAL LOGIN (email + password)
+// =========================
+
+/**
+ * Đăng nhập miniapp bằng email + password (local)
+ * - Tìm user theo email
+ * - Check đã có password_hash chưa
+ * - So sánh mật khẩu
+ * - Trả về user + tokens
+ */
+export const loginMiniAppLocal = async (payload) => {
+  const { email, password } = payload;
+
+  // 1. Tìm user theo email
+  const user = await User.findOne({ where: { email } });
+
+  // 2. Email không tồn tại hoặc chưa có password_hash → không cho login local
+  if (!user || !user.password_hash) {
+    throw new AppError("Email hoặc mật khẩu không chính xác", 401);
+  }
+
+  // 3. So sánh mật khẩu
+  const isMatch = await comparePassword(password, user.password_hash);
+  if (!isMatch) {
+    throw new AppError("Email hoặc mật khẩu không chính xác", 401);
+  }
+
+  // 4. Cấp token
+  const tokens = await issueTokens({
+    subjectId: user.id,
+    subjectType: SUBJECT_TYPES.CUSTOMER,
+    role: AUTH_ROLES.CUSTOMER,
+    provider: AUTH_PROVIDERS.LOCAL,
+  });
+
+  return { user, tokens };
+};
+
+// =========================
+// 7) REFRESH TOKEN CHUNG (MINIAPP + DASHBOARD)
+// =========================
+
+/**
+ * Làm mới cặp accessToken + refreshToken.
+ * Dùng chung cho:
+ *  - CUSTOMER (miniapp, SUBJECT_TYPES.CUSTOMER)
+ *  - RESTAURANT_ACCOUNT (dashboard)
+ *
+ * @param {string} refreshToken
+ * @returns {Promise<{ tokens, user?, account?, restaurant? }>}
+ */
+export const refreshAuthTokens = async (refreshToken) => {
+  // Dùng hàm refreshTokens của token.service để:
+  // - verify JWT refresh
+  // - check record trong bảng auth_tokens
+  // - rotate token (revoke cũ, tạo mới)
+  // - load lại principal (user hoặc restaurant_account)
+  const {
+    accessToken,
+    refreshToken: newRefreshToken,
+    principal,
+  } = await refreshTokens(refreshToken, async (sub, subType) => {
+    // Hàm này định nghĩa "principal" tuỳ theo loại subject
+    if (subType === SUBJECT_TYPES.CUSTOMER) {
+      const user = await User.findByPk(sub);
+      if (!user) return null;
+
+      return {
+        subjectType: SUBJECT_TYPES.CUSTOMER,
+        model: user, // giữ model để controller dùng DTO
+        role: AUTH_ROLES.CUSTOMER,
+        provider: AUTH_PROVIDERS.ZALO,
+      };
+    }
+
+    if (subType === SUBJECT_TYPES.RESTAURANT_ACCOUNT) {
+      const account = await RestaurantAccount.findByPk(sub);
+      if (!account) return null;
+
+      return {
+        subjectType: SUBJECT_TYPES.RESTAURANT_ACCOUNT,
+        model: account,
+        role: account.role, // OWNER / STAFF
+        provider: AUTH_PROVIDERS.LOCAL,
+      };
+    }
+
+    return null;
+  });
+
+  // Chuẩn hoá kết quả trả về cho controller
+  const result = {
+    tokens: {
+      accessToken,
+      refreshToken: newRefreshToken,
+    },
+  };
+
+  if (!principal) {
+    return result;
+  }
+
+  // Case miniapp: CUSTOMER
+  if (principal.subjectType === SUBJECT_TYPES.CUSTOMER) {
+    result.user = principal.model;
+  }
+
+  // Case dashboard: RESTAURANT_ACCOUNT
+  if (principal.subjectType === SUBJECT_TYPES.RESTAURANT_ACCOUNT) {
+    const account = principal.model;
+    const restaurant = await Restaurant.findByPk(account.restaurant_id);
+
+    result.account = account;
+    result.restaurant = restaurant;
+  }
+
+  return result;
+};
+
+// =========================
+// 8) LOGOUT 1 PHIÊN (dùng refreshToken)
+// =========================
+
+/**
+ * Logout 1 session hiện tại:
+ *  - Verify refreshToken
+ *  - Lấy tid (token_id) từ payload
+ *  - Revoke record tương ứng trong auth_tokens
+ *
+ * Không quan trọng subject là customer hay restaurant_account.
+ */
+export const logoutSession = async (refreshToken) => {
+  if (!refreshToken) {
+    throw new AppError("Thiếu refreshToken trong request", 400);
+  }
+
+  let payload;
+  try {
+    payload = verifyRefreshToken(refreshToken);
+  } catch (err) {
+    err.statusCode = 401;
+    throw err;
+  }
+
+  const { tid, type } = payload;
+
+  if (type !== TOKEN_TYPES.REFRESH) {
+    throw new AppError("Token không phải loại refresh hợp lệ", 400);
+  }
+
+  if (!tid) {
+    throw new AppError("Refresh token không chứa token_id (tid) hợp lệ", 400);
+  }
+
+  // Revoke đúng 1 refresh token (tức 1 session)
+  await revokeTokenById(tid);
 };

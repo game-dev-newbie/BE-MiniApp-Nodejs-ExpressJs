@@ -7,7 +7,10 @@ import {
   BookingResponse,
   RestaurantTableResponse,
 } from "../dtos/index.js";
-
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.util.js";
 
 class BookingController {
   // ============= MINIAPP =============
@@ -63,15 +66,27 @@ class BookingController {
     const userId = req.user.id;
     const { category } = req.query;
 
-    const bookings = await bookingService.listBookingsForUser(userId, {
+    const { limit, offset, page } = parsePagination(req.query);
+
+    const result = await bookingService.listBookingsForUser(userId, {
       category,
+      limit,
+      offset,
     });
-    const items = BookingMiniAppResponse.fromList(bookings);
+    const items = BookingMiniAppResponse.fromList(result.items);
 
     return res.status(200).json({
       success: true,
       message: "Lấy danh sách booking của bạn thành công",
-      data: { items },
+      data: {
+        items,
+        pagination: buildPaginationMeta({
+          total: result.total,
+          limit,
+          offset,
+          page,
+        }),
+      },
     });
   });
 
@@ -137,28 +152,29 @@ class BookingController {
     const accountId = req.restaurantAccount.id;
     const { status, from_date, to_date } = req.query;
 
-    const filters = {};
+    const { limit, offset, page } = parsePagination(req.query);
 
-    if (status) {
-      filters.status = status; // có thể validate status nằm trong BOOKING_STATUS nếu muốn gắt hơn
-    }
-    if (from_date) {
-      filters.from_date = from_date;
-    }
-    if (to_date) {
-      filters.to_date = to_date;
-    }
-    const bookings = await bookingService.listBookingsForRestaurant(
+    const filters = { status, from_date, to_date, limit, offset };
+
+    const result = await bookingService.listBookingsForRestaurant(
       accountId,
       filters
     );
 
-    const items = BookingResponse.fromList(bookings);
+    const items = BookingResponse.fromList(result.items);
 
     return res.status(200).json({
       success: true,
       message: "Lấy danh sách booking của nhà hàng thành công",
-      data: { items },
+      data: {
+        items,
+        pagination: buildPaginationMeta({
+          total: result.total,
+          limit,
+          offset,
+          page,
+        }),
+      },
     });
   });
 
@@ -247,6 +263,43 @@ class BookingController {
       data,
     });
   });
+
+  /**
+   * DASHBOARD: search booking theo tên khách hàng (customer_name)
+   * GET /dashboard/bookings/search?q=...
+   */
+  searchBookingsByCustomerNameForDashboard = catchAsync(
+    async (req, res, next) => {
+      const restaurantId = req.restaurantAccount.restaurant_id; // đã gắn từ jwtMiddleware
+      const { q } = req.query;
+
+      const { limit, offset, page } = parsePagination(req.query);
+
+      const result =
+        await bookingService.searchBookingsByCustomerNameForDashboard(
+          restaurantId,
+          {
+            q,
+            limit,
+            offset,
+          }
+        );
+
+      const data = BookingResponse.fromList(result.items);
+
+      return res.status(200).json({
+        success: true,
+        message: "Tìm kiếm booking theo tên khách hàng thành công",
+        data,
+        meta: buildPaginationMeta({
+          total: result.total,
+          limit,
+          offset,
+          page,
+        }),
+      });
+    }
+  );
 }
 
 const bookingController = new BookingController();

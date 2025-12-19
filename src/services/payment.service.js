@@ -5,8 +5,10 @@ import { AppError } from "../utils/appError.js";
 import {
   PAYMENT_STATUS,
   PAYMENT_PROVIDER,
-  BOOKING_STATUS
-} from "../constants/index.js"; 
+  BOOKING_STATUS,
+  NOTIFICATION_TYPE,
+} from "../constants/index.js";
+import * as notificationService from "./notification.service.js";
 
 const { Booking } = models;
 
@@ -93,6 +95,14 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
     booking.payment_reference = null;
     booking.paid_at = null;
     await booking.save();
+
+    await notificationService.createNotification({
+      userId,
+      type: NOTIFICATION_TYPE.BOOKING_PAYMENT_FAILED,
+      title: "Thanh toán cọc thất bại",
+      message:
+        "Thanh toán đặt cọc cho booking của bạn không thành công, vui lòng thử lại.",
+    });
     return booking;
   }
 
@@ -106,6 +116,22 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
     booking.payment_reference = `PAY-${booking.id}-${Date.now()}`;
 
     await booking.save();
+
+    // Thông báo cho khách
+    await notificationService.createNotification({
+      userId,
+      type: NOTIFICATION_TYPE.BOOKING_PAYMENT_SUCCESS,
+      title: "Thanh toán cọc thành công",
+      message: "Bạn đã thanh toán cọc cho booking thành công.",
+    });
+
+    // Thông báo cho nhà hàng
+    await notificationService.createNotification({
+      restaurantId: booking.restaurant_id,
+      type: NOTIFICATION_TYPE.BOOKING_PAYMENT_SUCCESS,
+      title: "Booking đã thanh toán cọc",
+      message: "Một booking đã được khách thanh toán cọc.",
+    });
     return booking;
   }
 

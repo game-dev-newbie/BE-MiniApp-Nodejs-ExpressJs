@@ -159,8 +159,6 @@ export const listMyReviews = async (userId, filters = {}) => {
   return {
     items: rows,
     total: count,
-    limit: parsedLimit,
-    offset: parsedOffset,
   };
 };
 
@@ -235,8 +233,6 @@ export const listRestaurantReviewsForMiniApp = async (
   return {
     items: rows,
     total: count,
-    limit: parsedLimit,
-    offset: parsedOffset,
   };
 };
 
@@ -280,24 +276,16 @@ export const listRestaurantReviewsForDashboard = async (
     }
   }
 
-  // ---- filter theo khoảng thời gian created_at (from_time / to_time) ----
-  const parseDateTime = (value) => {
-    if (!value) return undefined;
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return undefined;
-    return d;
-  };
+  // ---- filter created_at: from_time, to_time ----
+  const { start, end } = time.buildDayRange(from_time, to_time);
 
-  const fromTime = parseDateTime(from_time);
-  const toTime = parseDateTime(to_time);
-
-  if (fromTime || toTime) {
+  if (start || end) {
     where.created_at = {};
-    if (fromTime) {
-      where.created_at[Op.gte] = fromTime;
+    if (start) {
+      where.created_at[Op.gte] = start;
     }
-    if (toTime) {
-      where.created_at[Op.lte] = toTime;
+    if (end) {
+      where.created_at[Op.lte] = end;
     }
   }
 
@@ -319,8 +307,6 @@ export const listRestaurantReviewsForDashboard = async (
   return {
     items: rows,
     total: count,
-    limit: parsedLimit,
-    offset: parsedOffset,
   };
 };
 
