@@ -21,9 +21,9 @@ class UploadController {
       data: {
         filename,
         originalName: originalname,
-        mimeType: mimetype,
-        size,
-        path: relativeUrl, // "/uploads/..."
+        mimeType: "image/jpeg", // ✅ Always JPEG after compression
+        size, // ✅ Compressed size
+        path: relativeUrl,
         url: absoluteUrl,
       },
     });
@@ -44,8 +44,8 @@ class UploadController {
       return {
         filename,
         originalName: originalname,
-        mimeType: mimetype,
-        size,
+        mimeType: "image/jpeg", // ✅ Always JPEG after compression
+        size, // ✅ Compressed size
         path: relativeUrl,
         url: absoluteUrl,
       };

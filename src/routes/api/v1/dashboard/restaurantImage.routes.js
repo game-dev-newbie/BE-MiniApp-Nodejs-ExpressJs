@@ -12,6 +12,7 @@ import {
 
 const router = Router();
 
+// Chỉ OWNER được tạo ảnh
 router.post(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER),
@@ -19,6 +20,7 @@ router.post(
   restaurantImageController.createForDashboard
 );
 
+// Cả OWNER + STAFF đều được xem danh sách & chi tiết ảnh
 router.get(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
@@ -26,12 +28,14 @@ router.get(
   restaurantImageController.getMyRestaurantImages
 );
 
+// Cả OWNER + STAFF đều được xem chi tiết ảnh
 router.get(
   "/:id",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   restaurantImageController.getMyRestaurantImageDetail
 );
 
+// Chỉ OWNER được xoá ảnh
 router.delete(
   "/:id",
   ...requireDashboardRoles(AUTH_ROLES.OWNER),

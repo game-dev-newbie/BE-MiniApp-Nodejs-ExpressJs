@@ -2,10 +2,7 @@
 import { Router } from "express";
 import restaurantController from "../../../../controllers/restaurant.controller.js";
 import { requireCustomer } from "../../../../middlewares/jwtAuthorization.js";
-import {
-  MiniAppSearchRestaurantsQueryDto,
-  MiniAppSearchRestaurantsQueryDto,
-} from "../../../../dtos/index.js";
+import { MiniAppSearchRestaurantsQueryDto } from "../../../../dtos/index.js";
 import validate from "../../../../middlewares/validate.js";
 
 const router = Router();

@@ -2,6 +2,8 @@
 
 import models from "../models/index.js";
 import { Op } from "sequelize";
+import fs from "fs";
+import path from "path";
 import { AppError } from "../utils/appError.js";
 import { TABLE_STATUS } from "../constants/index.js";
 import {
@@ -48,6 +50,48 @@ const getTableUnderAccountRestaurant = async (accountId, tableId) => {
   }
 
   return { account, table };
+};
+
+/**
+ * ✅ NEW: Validate view_image_url path
+ * Ensures path follows new structure:  uploads/restaurants/{rid}/tables/{tid}/view/
+ */
+const validateTableImagePath = (restaurantId, tableId, imagePath) => {
+  if (!imagePath) {
+    return null; // Null is OK
+  }
+
+  const normalizedPath = normalizeWebPath(imagePath);
+
+  if (!normalizedPath) {
+    throw new AppError("Đường dẫn ảnh không hợp lệ", 400);
+  }
+
+  // ✅ NEW STRUCTURE: Check path belongs to this restaurant's table
+  const expectedPrefix = `/uploads/restaurants/${restaurantId}/tables/${tableId}/view/`;
+
+  if (!normalizedPath.startsWith(expectedPrefix)) {
+    throw new AppError(
+      `Đường dẫn ảnh không hợp lệ.  Đường dẫn phải bắt đầu bằng:  ${expectedPrefix}`,
+      403
+    );
+  }
+
+  // ✅ Check file exists on disk
+  const diskPath = path.join(
+    process.cwd(),
+    "public",
+    normalizedPath.replace(/^\//, "")
+  );
+
+  if (!fs.existsSync(diskPath)) {
+    throw new AppError(
+      "File ảnh không tồn tại trên server.  Vui lòng upload lại.",
+      404
+    );
+  }
+
+  return normalizedPath;
 };
 
 // =====================
@@ -99,13 +143,50 @@ export const getTableDetail = async (accountId, tableId) => {
 export const createTable = async (accountId, payload) => {
   const account = await getAccountWithRestaurant(accountId);
 
+  // ✅ IMPROVED: Validate view_image_url if provided
+  let validatedImageUrl = null;
+
+  if (payload.view_image_url) {
+    const normalizedPath = normalizeWebPath(payload.view_image_url);
+
+    if (!normalizedPath) {
+      throw new AppError("Đường dẫn ảnh không hợp lệ", 400);
+    }
+
+    // ✅ NEW:  For createTable, we can't validate full path yet (no tableId)
+    // So we do basic validation:  must be in restaurant's folder
+    const expectedPrefix = `/uploads/restaurants/${account.restaurant_id}/tables/`;
+
+    if (!normalizedPath.startsWith(expectedPrefix)) {
+      throw new AppError(
+        `Đường dẫn ảnh phải bắt đầu bằng: ${expectedPrefix}`,
+        403
+      );
+    }
+
+    // Check file exists
+    const diskPath = path.join(
+      process.cwd(),
+      "public",
+      normalizedPath.replace(/^\//, "")
+    );
+
+    if (!fs.existsSync(diskPath)) {
+      throw new AppError(
+        "File ảnh không tồn tại trên server. Vui lòng upload lại.",
+        404
+      );
+    }
+
+    validatedImageUrl = normalizedPath;
+  }
   const table = await RestaurantTable.create({
     restaurant_id: account.restaurant_id,
     name: payload.name,
     capacity: payload.capacity,
     location: payload.location,
     status: payload.status || TABLE_STATUS.ACTIVE,
-    view_image_url: payload.view_image_url || null,
+    view_image_url: validatedImageUrl,
     view_note: payload.view_note || null,
   });
 
@@ -117,7 +198,10 @@ export const createTable = async (accountId, payload) => {
 // =====================
 
 export const updateTable = async (accountId, tableId, payload) => {
-  const { table } = await getTableUnderAccountRestaurant(accountId, tableId);
+  const { account, table } = await getTableUnderAccountRestaurant(
+    accountId,
+    tableId
+  );
   const oldView = table.view_image_url;
 
   const fields = [
@@ -135,20 +219,44 @@ export const updateTable = async (accountId, tableId, payload) => {
     }
   }
 
+  // ✅ IMPROVED: Validate view_image_url with NEW PATH STRUCTURE
+  if (payload.view_image_url !== undefined) {
+    const validatedPath = validateTableImagePath(
+      account.restaurant_id,
+      tableId,
+      payload.view_image_url
+    );
+    table.view_image_url = validatedPath;
+  }
+
   await table.save();
 
   // Nếu client gửi view_image_url mới (kể cả null) -> xem như có ý định thay đổi ảnh
+  // ✅ Cleanup old image
   if (payload.view_image_url !== undefined) {
     const newView = table.view_image_url;
 
-    // Case 1: đổi sang ảnh mới khác ảnh cũ -> xoá ảnh cũ
+    // Case 1: Thay ảnh mới → xóa ảnh cũ
     if (oldView && newView && !isSameWebPath(oldView, newView)) {
-      await safeUnlinkByWebPath(oldView);
+      try {
+        await safeUnlinkByWebPath(oldView);
+        console.log(`✅ Deleted old table image: ${oldView}`);
+      } catch (err) {
+        console.error(`⚠️ Failed to delete old table image: ${oldView}`, err);
+      }
     }
 
-    // Case 2: xoá ảnh (set null) -> xoá file cũ
+    // Case 2: Xóa ảnh (set null) → xóa file cũ
     if (oldView && !newView) {
-      await safeUnlinkByWebPath(oldView);
+      try {
+        await safeUnlinkByWebPath(oldView);
+        console.log(`✅ Deleted removed table image: ${oldView}`);
+      } catch (err) {
+        console.error(
+          `⚠️ Failed to delete removed table image: ${oldView}`,
+          err
+        );
+      }
     }
   }
   return table;
@@ -165,9 +273,25 @@ export const softDeleteTable = async (accountId, tableId) => {
   if (table.status === TABLE_STATUS.INACTIVE) {
     throw new AppError("Bàn này đã ở trạng thái INACTIVE rồi", 400);
   }
+  // ✅ IMPROVED: Delete view_image_url file when soft deleting
+  const oldView = table.view_image_url;
 
   table.status = TABLE_STATUS.INACTIVE;
+
+  // ✅ Optional: Clear view_image_url when soft deleting
+  table.view_image_url = null;
+
   await table.save();
 
+  // ✅ Delete physical file
+  if (oldView) {
+    try {
+      await safeUnlinkByWebPath(oldView);
+      console.log(`✅ Deleted table view image on soft delete: ${oldView}`);
+    } catch (err) {
+      console.error(`⚠️ Failed to delete table view image: ${oldView}`, err);
+      // Don't throw - soft delete should succeed anyway
+    }
+  }
   return table;
 };

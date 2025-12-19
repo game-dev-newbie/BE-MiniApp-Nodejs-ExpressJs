@@ -8,7 +8,7 @@ import {
   RestaurantTableCreateDto,
   RestaurantTableUpdateDto,
 } from "../../../../dtos/index.js";
-import { paginationQuerySchema } from "../../../../common/paginationQuery.schema.dto.js";
+import { paginationQuerySchema } from "../../../../dtos/requests/common/paginationQuery.schema.dto.js";
 import restaurantTableController from "../../../../controllers/restaurantTable.controller.js";
 
 const router = Router();

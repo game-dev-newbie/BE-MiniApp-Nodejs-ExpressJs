@@ -57,6 +57,15 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // ✅ Multer errors (file upload)
+  if (err.name === "MulterError") {
+    return res.status(400).json({
+      success: false,
+      message: `Upload error: ${err.message}`,
+      statusCode: 400,
+    });
+  }
+
   // 4) Fallback: lỗi không phân loại
   return res.status(500).json({
     success: false,
