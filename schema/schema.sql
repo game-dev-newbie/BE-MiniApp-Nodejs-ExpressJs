@@ -12,7 +12,7 @@ CREATE TABLE `users` (
 CREATE TABLE `user_auth_providers` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `user_id` bigint,
-  `provider` varchar(255),
+  `provider` varchar(50),
   `provider_user_id` varchar(255),
   `created_at` datetime,
   `updated_at` datetime
@@ -57,12 +57,11 @@ CREATE TABLE `restaurants` (
 CREATE TABLE `restaurant_accounts` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `restaurant_id` bigint,
-  `full_name` varchar(255),
-  `email` varchar(255) COMMENT 'UNIQUE',
+  `email` varchar(255),
   `password_hash` varchar(255),
+  `full_name` varchar(255),
   `role` varchar(50),
   `status` varchar(50),
-  `is_locked` boolean DEFAULT false,
   `avatar_url` varchar(255),
   `created_at` datetime,
   `updated_at` datetime
@@ -76,7 +75,8 @@ CREATE TABLE `restaurant_tables` (
   `location` varchar(255),
   `status` varchar(50),
   `view_image_url` varchar(255),
-  `view_note` varchar(255),
+  `view_note` text,
+  `is_deleted` boolean DEFAULT false,
   `created_at` datetime,
   `updated_at` datetime
 );
@@ -143,6 +143,9 @@ CREATE TABLE `notifications` (
   `title` varchar(255),
   `message` text,
   `channel` varchar(50) DEFAULT 'IN_APP',
+  `target_type` varchar(50),
+  `target_id` bigint,
+  `meta` json,
   `is_read` boolean DEFAULT false,
   `read_at` datetime,
   `created_at` datetime,
@@ -152,11 +155,11 @@ CREATE TABLE `notifications` (
 CREATE TABLE `restaurant_images` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `restaurant_id` bigint,
-  `file_path` varchar(255),
   `type` varchar(50),
-  `caption` varchar(255),
+  `file_path` varchar(255),
   `is_primary` boolean DEFAULT false,
-  `created_at` datetime
+  `created_at` datetime,
+  `updated_at` datetime
 );
 
 CREATE UNIQUE INDEX `user_auth_providers_index_0` ON `user_auth_providers` (`provider`, `provider_user_id`);
@@ -174,8 +177,6 @@ CREATE INDEX `bookings_index_5` ON `bookings` (`user_id`, `booking_time`);
 CREATE UNIQUE INDEX `reviews_index_6` ON `reviews` (`booking_id`);
 
 CREATE UNIQUE INDEX `favorite_restaurants_index_7` ON `favorite_restaurants` (`user_id`, `restaurant_id`);
-
-ALTER TABLE `users` COMMENT = 'End-user (customer) đăng nhập qua Zalo / social.';
 
 ALTER TABLE `user_auth_providers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 

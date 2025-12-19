@@ -1,6 +1,6 @@
 "use strict";
 import { Model } from "sequelize";
-
+import { safeUnlinkByWebPath } from "../utils/fileStorage.util.js";
 export default (sequelize, DataTypes) => {
   class RestaurantTable extends Model {
     static associate(models) {
@@ -41,6 +41,25 @@ export default (sequelize, DataTypes) => {
       timestamps: true,
       createdAt: "created_at",
       updatedAt: "updated_at",
+
+      // ✅ IMPROVEMENT: Auto delete file when record is deleted
+      hooks: {
+        beforeDestroy: async (instance) => {
+          if (instance.view_image_url) {
+            try {
+              await safeUnlinkByWebPath(instance.view_image_url);
+              console.log(
+                `✅ Auto-deleted table view image: ${instance.view_image_url}`
+              );
+            } catch (err) {
+              console.error(
+                `⚠️ Failed to auto-delete table view image: ${instance.view_image_url}`,
+                err
+              );
+            }
+          }
+        },
+      },
     }
   );
 
