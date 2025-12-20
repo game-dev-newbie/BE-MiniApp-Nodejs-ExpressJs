@@ -140,7 +140,7 @@ export const sendRefundEmail = async (booking, user, restaurant) => {
   }
 
   const { generateRefundEmailHTML } = await import(
-    "../templates/email/refund. template.js"
+    "../templates/email/refund.template.js"
   );
 
   const html = generateRefundEmailHTML({

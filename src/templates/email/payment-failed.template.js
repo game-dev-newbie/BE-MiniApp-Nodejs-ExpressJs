@@ -1,6 +1,6 @@
 // src/templates/email/payment-failed. template.js
 
-import * as time from "../../utils/time.js";
+import time from "../../utils/time.js";
 
 export const generatePaymentFailedHTML = ({ booking, user, restaurant }) => {
   return `

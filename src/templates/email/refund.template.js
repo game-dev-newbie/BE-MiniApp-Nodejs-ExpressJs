@@ -1,6 +1,6 @@
 // src/templates/email/refund.template. js
 
-import * as time from "../../utils/time.js";
+import time from "../../utils/time.js";
 
 export const generateRefundEmailHTML = ({ booking, user, restaurant }) => {
   return `
