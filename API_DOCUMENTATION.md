@@ -1,6 +1,7 @@
 # 📚 RESTAURANT BOOKING SYSTEM - API DOCUMENTATION
 
-**Base URL:** `http://localhost:3000/api`  
+**Base URL:** `http://localhost:8027/api`  
+**(tùy, nếu sử dụng chung máy local, khác thì dùng static domain)**
 **Version:** v1  
 **Last Updated:** 2025-12-20  
 **Author:** Backend Team
@@ -11,7 +12,7 @@
 
 ### PART 1: AUTHENTICATION & AUTHORIZATION
 
-- [1. 1. Authentication Overview](#11-authentication-overview)
+- [1.1. Authentication Overview](#11-authentication-overview)
 - [1.2. Token System](#12-token-system)
 - [1.3. Authorization Header](#13-authorization-header)
 - [2. Dashboard Authentication](#2-dashboard-authentication)
@@ -23,6 +24,7 @@
   - [3.2. Register Local](#32-register-local)
   - [3.3. Login Local](#33-login-local)
   - [3.4. Refresh Token](#34-refresh-token)
+  - [3.5. Logout](#35-logout)
 
 ### PART 2: DASHBOARD APIs
 
@@ -73,7 +75,7 @@ Hệ thống có 2 loại user:
 
 ### 1.2. Token System
 
-**Access Token (Short-lived: 7 days)**
+**Access Token (Short-lived: 30 minutes)**
 
 ```json
 {
@@ -101,13 +103,19 @@ Hệ thống có 2 loại user:
 }
 ```
 
+** Lưu ý**
+
+- Dashboard: Lưu 2 tokens vào localStorage, mỗi request thì gửi accessToken kèm vào header với cú pháp Authorization: Beare <accessToken>. Khi req nào hết hạn accessToken thì gửi ngay refreshToken vào header với cú pháp refreshToken để có thể nhận lại tokens mới và sau đó gửi accessToken đính kèm lại cho req cũ
+
+- Miniapp: Lưu 2 tokens vào nativeStorage của zalo hỗ trợ (nếu môi trường test web thì lưu localStorage). Flow giống với dashboard nêu trên.
+
 ### 1.3. Authorization Header
 
 ```http
 Authorization: Bearer <access_token>
 ```
 
----
+## ** Lưu ý gắn vào mỗi request cần có quyền để sử dụng**
 
 ## 2. DASHBOARD AUTHENTICATION
 
@@ -126,7 +134,8 @@ Authorization: Bearer <access_token>
   "password": "Password123!",
   "restaurant_name": "Nhà Hàng ABC",
   "restaurant_address": "123 Đường XYZ, Quận 1, TP.HCM",
-  "restaurant_phone": "0901234567"
+  "restaurant_phone": "0901234567",
+  "restaurant_description" : "..." (có thể không nhập)
 }
 ```
 
@@ -204,7 +213,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-> **Note:** Staff cần được OWNER approve trước khi login được!
+> **Note:** Staff cần được OWNER approve trước khi login được! Phải được duyệt và đăng nhập mới có tokens
 
 ---
 
@@ -306,8 +315,9 @@ import { getAccessToken, getUserInfo } from "zmp-sdk";
 const { accessToken } = await getAccessToken();
 const { userInfo } = await getUserInfo();
 
+// Miniapp tự gọi api của zalo hỗ trợ và lấy thông tin, sau đó truyền vào req.body gửi lên cho server. Đây là giả lập code
 // 2. Call API
-const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
+const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -373,7 +383,7 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
   "display_name": "Lê Thị D",
   "email": "customer@example.com",
   "password": "Password123!",
-  "phone": "0901234567"
+  "phone": "0901234567" (optional, không cần nhập)
 }
 ```
 
@@ -468,17 +478,47 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 }
 ```
 
+### 3.5. Logout
+
+**Endpoint:** `POST /v1/common/auth/logout`
+
+**Description:** Đăng xuất thu hồi token (dùng chung cho cả Dashboard & MiniApp)
+
+**Request Body:**
+
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Đăng xuất phiên hiện tại thành công"
+}
+```
+
 ---
 
 ## PART 2: DASHBOARD APIs
 
 ## 4. RESTAURANT MANAGEMENT
 
-### 4.1. Get My Restaurant
+### 4.1. Get My Restaurant (xem thông tin nhà hàng)
 
 **Endpoint:** `GET /v1/dashboard/restaurants/me`
 
-**Auth Required:** ✅ Owner/Staff
+**Auth Required:** ✅ Owner/Staff (cả staff và owner đều xem được thông tin)
+
+**Request body**
+
+```http
+`GET /v1/dashboard/restaurants/me`
+`Authorization: Bearer <access_token>`
+```
 
 **Response:** `200 OK`
 
@@ -515,7 +555,7 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 
 **Endpoint:** `PATCH /v1/dashboard/restaurants/me`
 
-**Auth Required:** ✅ Owner only
+**Auth Required:** ✅ Owner only (chỉ owner được phép dùng chức năng)
 
 **Request Body:**
 
@@ -535,6 +575,21 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 
 > **Note:** Tất cả fields đều optional, chỉ gửi fields muốn update
 
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "Cập nhật thông tin nhà hàng thành công",
+  "data": {
+    "id": 1,
+    "name": "Nhà Hàng ABC - Chi Nhánh 1",
+    "address": "456 Đường Mới, Quận 2, TP.HCM"
+    // ... updated fields
+  }
+}
+```
+
 ---
 
 ## 5. TABLE MANAGEMENT
@@ -543,13 +598,19 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 
 **Endpoint:** `GET /v1/dashboard/tables`
 
-**Auth Required:** ✅ Owner/Staff
+**Auth Required:** ✅ Owner/Staff (cả staff và owner đều dùng được)
 
 **Query Parameters:**
 
-- `status` - Filter theo status (ACTIVE, INACTIVE)
 - `limit` - Số lượng records (default: 20, max: 100)
 - `offset` - Offset for pagination (default: 0)
+
+**Request**
+
+```http
+`GET /v1/dashboard/tables?limit=10&offset=0` (ví dụ limit thôi)
+`Authorization: Bearer <access_token>`
+```
 
 **Response:** `200 OK`
 
@@ -582,13 +643,47 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 }
 ```
 
+### 5.2. Get detail table
+
+**Endpoint:** `GET /v1/dashboard/tables/:id`
+
+**Auth Required:** ✅ Owner/Staff (cả staff và owner đều dùng được)
+
+**Request**
+
+```http
+`GET /v1/dashboard/tables/1` (ví dụ muốn xem chi tiết tables_id = 1)
+`Authorization: Bearer <access_token>`
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Lấy thông tin bàn thành công",
+  "data": {
+    "id": 1,
+    "restaurant_id": 1,
+    "name": "Bàn 1",
+    "capacity": 4,
+    "location": "Tầng 1 - Gần cửa sổ",
+    "status": "ACTIVE",
+    "view_image_url": "/uploads/restaurants/1/tables/1/view/image.jpg",
+    "view_note": "View đẹp nhìn ra vườn",
+    "created_at": "2025-12-20 10:00:00",
+    "updated_at": "2025-12-20 10:00:00"
+  }
+}
+```
+
 ---
 
-### 5.2. Create Table
+### 5.3. Create Table
 
 **Endpoint:** `POST /v1/dashboard/tables`
 
-**Auth Required:** ✅ Owner only
+**Auth Required:** ✅ Owner only (chỉ owner được phép tạo bàn mới)
 
 **Request Body:**
 
@@ -603,21 +698,83 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 }
 ```
 
+**Lưu ý: đường path của view_image_url là path sau khi đi qua API upload của server, sau đó sẽ sử dụng làm data để truyền lên lưu vào Database qua API tạo bàn**
+
+**Response: `201 Created`**
+
+```json
+{
+  "success": true,
+  "message": "Tạo bàn thành công",
+  "data": {
+    "id": 3,
+    "restaurant_id": 1,
+    "name": "Bàn VIP 1",
+    "capacity": 8,
+    "location": "Tầng 2 - Phòng riêng",
+    "status": "ACTIVE",
+    "view_image_url": "/uploads/restaurants/1/tables/3/view/image.jpg",
+    "view_note": "Phòng VIP có máy lạnh",
+    "created_at": "2025-12-20 11:00:00"
+  }
+}
+```
+
 ---
 
-### 5.3. Update Table
+### 5.4. Update Table
 
-**Endpoint:** `PATCH /v1/dashboard/tables/: id`
+**Endpoint:** `PATCH /v1/dashboard/tables/:id`
 
 **Auth Required:** ✅ Owner only
+**Request body**
+
+```json
+{
+  "name": "Bàn VIP 1 (Updated)",
+  "capacity": 10,
+  "location": "Tầng 2 - Phòng riêng VIP",
+  "view_note": "Phòng VIP có máy lạnh + karaoke"
+}
+```
+
+**Response: `200 OK`**
+
+```json
+{
+  "success": true,
+  "message": "Cập nhật bàn thành công",
+  "data": {
+    "id": 3,
+    "name": "Bàn VIP 1 (Updated)",
+    "capacity": 10
+    // ... updated fields
+  }
+}
+```
 
 ---
 
-### 5.4. Delete Table
+### 5.5. Delete Table
 
 **Endpoint:** `DELETE /v1/dashboard/tables/:id`
 
 **Auth Required:** ✅ Owner only
+**Request**
+
+```http
+`DELETE /v1/dashboard/tables/3`
+`Authorization: Bearer <access_token>`
+```
+
+**Response : `200 OK`**
+
+```json
+{
+  "success": true,
+  "message": "Xoá bàn thành công"
+}
+```
 
 > **Note:** Soft delete - bàn vẫn còn trong DB nhưng status = INACTIVE
 
@@ -638,6 +795,13 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 - `to_date` - YYYY-MM-DD
 - `limit` - Default: 20
 - `offset` - Default: 0
+
+**Request**
+
+```http
+`GET /v1/dashboard/bookings?status=PENDING&from_date=2025-12-20&to_date=2025-12-31&limit=10`
+`Authorization: Bearer <access_token>`
+```
 
 **Response:** `200 OK`
 
@@ -686,14 +850,84 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 **Query Parameters:**
 
 - `q` - Tên khách hàng (fuzzy search)
+- `limit` - Số lượng records
+- `offset` - Offset for pagination
+
+**Request**
+
+```http
+GET /v1/dashboard/bookings/search?q=Nguyễn&limit=10&offset=
+Authorization: Bearer <access_token>
+```
+
+**\*Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Tìm kiếm booking theo tên khách hàng thành công",
+  "data": {
+    "items": [
+      {
+        "id": 101,
+        "customer_name": "Nguyễn Văn C",
+        "phone": "0901234567",
+        "booking_time": "2025-12-21 19:00:00",
+        "status": "PENDING"
+        // ... other fields
+      }
+    ],
+    "pagination": {
+      "total": 3,
+      "limit": 10,
+      "offset": 0
+    }
+  }
+}
+```
 
 ---
 
 ### 6.3. Get Booking Detail
 
-**Endpoint:** `GET /v1/dashboard/bookings/: id`
+**Endpoint:** `GET /v1/dashboard/bookings/:id`
 
 **Auth Required:** ✅ Owner/Staff
+
+**Request**
+
+```http
+GET /v1/dashboard/bookings/101
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Lấy chi tiết booking thành công",
+  "data": {
+    "id": 101,
+    "restaurant_id": 1,
+    "table_id": 1,
+    "user_id": 10,
+    "phone": "0901234567",
+    "customer_name": "Nguyễn Văn C",
+    "people_count": 4,
+    "booking_time": "2025-12-21 19:00:00",
+    "status": "PENDING",
+    "deposit_amount": 50000,
+    "payment_status": "PAID",
+    "payment_provider": "ZALOPAY",
+    "payment_reference": "PAY-101-1703123456789",
+    "paid_at": "2025-12-20 15:30:00",
+    "note": "Muốn ngồi gần cửa sổ",
+    "created_at": "2025-12-20 15:00:00",
+    "updated_at": "2025-12-20 15:30:00"
+  }
+}
+```
 
 ---
 
@@ -704,6 +938,27 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 **Auth Required:** ✅ Owner/Staff
 
 **Description:** Xác nhận booking (PENDING → CONFIRMED)
+
+**Request**
+
+```http
+PATCH /v1/dashboard/bookings/101/confirm
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Xác nhận booking thành công",
+  "data": {
+    "id": 101,
+    "status": "CONFIRMED",
+    "updated_at": "2025-12-20 16:00:00"
+  }
+}
+```
 
 **Side Effects:**
 
@@ -718,20 +973,68 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 
 **Auth Required:** ✅ Owner/Staff
 
+**Request**
+
+```http
+PATCH /v1/dashboard/bookings/101/cancel
+Authorization:  Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Huỷ booking thành công",
+  "data": {
+    "id": 101,
+    "status": "CANCELLED",
+    "payment_status": "REFUNDED",
+    "refunded_at": "2025-12-20 16:30:00"
+  }
+}
+```
+
 **Side Effects:**
 
 - ✅ Hoàn tiền nếu đã thanh toán
 - ✅ Gửi notification + email cho customer
+- ✅ Updated booking status
 
 ---
 
-### 6.6. Complete Booking
+### 6.6. Complete Booking (check-in)
 
 **Endpoint:** `PATCH /v1/dashboard/bookings/:id/complete`
 
 **Auth Required:** ✅ Owner/Staff
 
-**Description:** Đánh dấu khách đã đến và hoàn thành
+**Description:** Đánh dấu khách đã đến và hoàn thành (check-in)
+
+**Request**
+
+```http
+PATCH /v1/dashboard/bookings/101/complete
+Authorization:  Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Đánh dấu hoàn tất booking thành công",
+  "data": {
+    "id": 101,
+    "status": "COMPLETED",
+    "updated_at": "2025-12-21 19:30:00"
+  }
+}
+```
+
+**Side Effects:**
+
+- ✅ Customer có thể review sau khi COMPLETED
 
 ---
 
@@ -740,6 +1043,30 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 **Endpoint:** `PATCH /v1/dashboard/bookings/:id/no-show`
 
 **Auth Required:** ✅ Owner/Staff
+
+**Discription**: Đánh dấu khách không đến
+
+**Request**
+
+```http
+PATCH /v1/dashboard/bookings/102/no-show
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Đánh dấu khách không đến (NO_SHOW) thành công",
+  "data": {
+    "id": 102,
+    "status": "NO_SHOW",
+    "payment_status": "PAID",
+    "updated_at": "2025-12-21 20:00:00"
+  }
+}
+```
 
 > **Note:** Nếu NO_SHOW → KHÔNG hoàn tiền đặt cọc
 
@@ -759,6 +1086,47 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 - `status` - VISIBLE, HIDDEN
 - `from_time` - YYYY-MM-DD
 - `to_time` - YYYY-MM-DD
+- `limit` - Số lượng records
+- `offset` - Offset for pagination
+
+**Request**
+
+```http
+GET /v1/dashboard/reviews?rating=5&limit=10
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 Ok`
+
+```json
+{
+  "success": true,
+  "message": "Lấy danh sách review của nhà hàng (dashboard) thành công",
+  "data": {
+    "items": [
+      {
+        "id": 50,
+        "booking_id": 101,
+        "restaurant_id": 1,
+        "user_id": 10,
+        "rating": 5,
+        "comment": "Món ăn ngon, phục vụ tốt! ",
+        "status": "VISIBLE",
+        "reply_comment": "Cảm ơn quý khách! ",
+        "reply_account_id": 1,
+        "reply_created_at": "2025-12-22 10:00:00",
+        "created_at": "2025-12-22 08:00:00",
+        "updated_at": "2025-12-22 10:00:00"
+      }
+    ],
+    "pagination": {
+      "total": 15,
+      "limit": 10,
+      "offset": 0
+    }
+  }
+}
+```
 
 ---
 
@@ -776,6 +1144,22 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 }
 ```
 
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Trả lời review thành công",
+  "data": {
+    "id": 50,
+    "reply_comment": "Cảm ơn quý khách đã tin tưởng!  Hẹn gặp lại!",
+    "reply_account_id": 1,
+    "reply_created_at": "2025-12-22 10:30:00",
+    "reply_updated_at": "2025-12-22 10:30:00"
+  }
+}
+```
+
 **Side Effects:**
 
 - ✅ Gửi notification cho customer
@@ -790,6 +1174,58 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 
 **Auth Required:** ✅ Owner only
 
+**Query parameters:**
+
+- `limit` -Số lượng records
+- `offset` - Offset for pagination
+
+**Request**
+
+```http
+GET /v1/dashboard/staff?limit=10
+Authorization: Bearer <owner_access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Lấy danh sách staff thành công",
+  "data": {
+    "items": [
+      {
+        "id": 2,
+        "restaurant_id": 1,
+        "full_name": "Trần Thị B",
+        "email": "staff@restaurant.com",
+        "role": "STAFF",
+        "status": "INVITED",
+        "is_locked": false,
+        "avatar_url": null,
+        "created_at": "2025-12-20 11:00:00"
+      },
+      {
+        "id": 3,
+        "restaurant_id": 1,
+        "full_name": "Lê Văn E",
+        "email": "staff2@restaurant.com",
+        "role": "STAFF",
+        "status": "ACTIVE",
+        "is_locked": false,
+        "avatar_url": "/uploads/restaurant-accounts/3/avatar/image.jpg",
+        "created_at": "2025-12-19 10:00:00"
+      }
+    ],
+    "pagination": {
+      "total": 5,
+      "limit": 10,
+      "offset": 0
+    }
+  }
+}
+```
+
 ---
 
 ### 8.2. Approve Staff
@@ -800,6 +1236,27 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 
 **Description:** Duyệt staff (INVITED → ACTIVE)
 
+**Request**
+
+```http
+PATCH /v1/dashboard/staff/2/approve
+Authorization: Bearer <owner_access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Duyệt staff thành công",
+  "data": {
+    "id": 2,
+    "status": "ACTIVE",
+    "updated_at": "2025-12-20 12:00:00"
+  }
+}
+```
+
 ---
 
 ### 8.3. Reject Staff
@@ -807,6 +1264,28 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 **Endpoint:** `PATCH /v1/dashboard/staff/:id/reject`
 
 **Auth Required:** ✅ Owner only
+
+**Description**: từ chối staff (INVITED -> REJECTED)
+
+**Request**
+
+```http
+PATCH /v1/dashboard/staff/2/reject
+Authorization: Bearer <owner_access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Từ chối staff thành công",
+  "data": {
+    "id": 2,
+    "status": "REJECTED"
+  }
+}
+```
 
 ---
 
@@ -816,6 +1295,26 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 
 **Auth Required:** ✅ Owner only
 
+**Request**
+
+```http
+PATCH /v1/dashboard/staff/3/lock
+Authorization: Bearer <owner_access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Khoá staff thành công",
+  "data": {
+    "id": 3,
+    "is_locked": true
+  }
+}
+```
+
 ---
 
 ### 8.5. Unlock Staff
@@ -823,6 +1322,26 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 **Endpoint:** `PATCH /v1/dashboard/staff/:id/unlock`
 
 **Auth Required:** ✅ Owner only
+
+**Request**
+
+```http
+PATCH /v1/dashboard/staff/3/unlock
+Authorization: Bearer <owner_access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Mở khoá staff thành công",
+  "data": {
+    "id": 3,
+    "is_locked": false
+  }
+}
+```
 
 ---
 
@@ -837,6 +1356,14 @@ const response = await fetch("/api/v1/miniapp/auth/zalo/login", {
 **Content-Type:** `multipart/form-data`
 
 **Request:**
+
+```http
+POST /v1/dashboard/uploads/images/restaurants/cover
+Authorization: Bearer <access_token>
+Content-Type:  multipart/form-data
+
+file: [binary image data]
+```
 
 - Field name: `file`
 - Max size: 5MB
