@@ -7,7 +7,7 @@ class UserController {
     // giả định middleware auth đã set req.user.id
     const userId = req.user.id;
 
-    const user = await userService.getMyMiniAppProfile(userId); // :contentReference[oaicite:1]{index=1}
+    const user = await userService.getMyMiniAppProfile(userId);
 
     return res.status(200).json({
       success: true,
@@ -43,7 +43,10 @@ class UserController {
       new_password: req.body.new_password,
     };
 
-    const user = await userService.changePasswordAndRevokeTokensMiniApp(userId, payload); // :contentReference[oaicite:3]{index=3}
+    const user = await userService.changePasswordAndRevokeTokensMiniApp(
+      userId,
+      payload
+    ); // :contentReference[oaicite:3]{index=3}
 
     return res.status(200).json({
       success: true,
@@ -54,5 +57,5 @@ class UserController {
     });
   });
 }
-
-export default new UserController();
+const userController = new UserController();
+export default userController;

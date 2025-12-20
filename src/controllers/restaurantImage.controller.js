@@ -72,11 +72,11 @@ class RestaurantImageController {
   getMyRestaurantImageDetail = catchAsync(async (req, res, next) => {
     const account = req.restaurantAccount;
     const restaurantId = account.restaurant_id;
-    const { id } = req.params;
+    const imageId = req.params.id;
 
     const image = await restaurantImageService.getImageByIdForRestaurant(
       restaurantId,
-      Number(id)
+      imageId
     );
 
     return res.status(200).json({
@@ -93,11 +93,11 @@ class RestaurantImageController {
   deleteMyRestaurantImage = catchAsync(async (req, res, next) => {
     const account = req.restaurantAccount;
     const restaurantId = account.restaurant_id;
-    const { id } = req.params;
+    const imageId = req.params.id;
 
     await restaurantImageService.deleteImageForRestaurant(
       restaurantId,
-      Number(id)
+      imageId
     );
 
     return res.status(200).json({

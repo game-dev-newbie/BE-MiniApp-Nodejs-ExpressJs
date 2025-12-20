@@ -110,9 +110,9 @@ class RestaurantController {
   });
 
   getMiniappDetail = catchAsync(async (req, res) => {
-    const { id } = req.params;
+    const restaurantId = req.params.id;
 
-    const restaurant = await restaurantService.getRestaurantById(id);
+    const restaurant = await restaurantService.getRestaurantById(restaurantId);
     const data = RestaurantResponse.toMiniappDetail(restaurant);
 
     return res.status(200).json({
@@ -123,7 +123,7 @@ class RestaurantController {
   });
 
   getRestaurantReviewsForMiniApp = catchAsync(async (req, res, next) => {
-    const { id: restaurantId } = req.params;
+    const restaurantId = req.params.id;
     const { sort } = req.query;
 
     const { limit, offset, page } = parsePagination(req.query);

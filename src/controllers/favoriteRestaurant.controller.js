@@ -14,7 +14,7 @@ class FavoriteRestaurantController {
    */
   addFavorite = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const restaurantId = req.params;
+    const restaurantId = req.params.id;
 
     const favorite = await favoriteService.addFavoriteRestaurant(
       userId,
@@ -35,7 +35,7 @@ class FavoriteRestaurantController {
    */
   removeFavorite = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const restaurantId = req.params;
+    const restaurantId = req.params.id;
 
     await favoriteService.removeFavoriteRestaurant(userId, restaurantId);
 
@@ -80,7 +80,7 @@ class FavoriteRestaurantController {
    */
   getFavoriteStatus = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const restaurantId = req.params;
+    const restaurantId = req.params.id;
 
     const isFavorite = await favoriteService.isRestaurantFavorite(
       userId,

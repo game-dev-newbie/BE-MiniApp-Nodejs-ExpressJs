@@ -6,7 +6,7 @@ import {
   buildPaginationMeta,
 } from "../utils/pagination.util.js";
 import * as reviewService from "../services/review.service.js";
-import ReviewResponse from "../dtos/responses/review.response.js";
+import { ReviewResponse } from "../dtos/index.js";
 
 class ReviewController {
   // ===================== MINIAPP =====================
@@ -17,7 +17,7 @@ class ReviewController {
    */
   createReviewFromBooking = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const bookingId = req.params;
+    const bookingId = req.params.id;
 
     const review = await reviewService.createReviewFromBooking(
       userId,
@@ -73,7 +73,7 @@ class ReviewController {
    */
   deleteMyReview = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const reviewId = req.params;
+    const reviewId = req.params.id;
 
     await reviewService.deleteMyReview(userId, reviewId);
 
@@ -137,7 +137,7 @@ class ReviewController {
    */
   replyReview = catchAsync(async (req, res, next) => {
     const accountId = req.restaurantAccount.id;
-    const reviewId = req.params;
+    const reviewId = req.params.id;
 
     const review = await reviewService.replyReview(
       accountId,

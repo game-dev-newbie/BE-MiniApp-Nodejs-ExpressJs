@@ -6,7 +6,7 @@ import {
   parsePagination,
   buildPaginationMeta,
 } from "../utils/pagination.util.js";
-import RestaurantAccountResponse from "../dtos/responses/restaurantAccount.response.js";
+import { RestaurantAccountResponse } from "../dtos/index.js";
 
 class StaffController {
   // GET /dashboard/staff
