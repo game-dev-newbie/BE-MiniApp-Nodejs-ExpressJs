@@ -5,7 +5,7 @@ import { catchAsync } from "../utils/catchAsync.js";
 class PaymentController {
   payDeposit = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
-    const bookingId = req.params;
+    const bookingId = req.params.id;
     const { provider, mock_result } = req.body;
 
     const booking = await paymentService.payDepositForBooking(

@@ -32,3 +32,15 @@ export const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || "";
 export const ZALO_MINI_APP_ID = process.env.ZALO_MINI_APP_ID || "";
 export const ZALO_GRAPH_API_URL =
   process.env.ZALO_GRAPH_API_URL || "https://graph.zalo.me/v2.0/me";
+
+// Gmail SMTP configuration
+export const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+export const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
+export const SMTP_SECURE = process.env.SMTP_SECURE === "true";
+export const SMTP_USER = process.env.SMTP_USER;
+export const SMTP_PASS = process.env.SMTP_PASS;
+export const SMTP_FROM = process.env.SMTP_FROM || "noreply@example.com";
+export const SMTP_FROM_NAME =
+  process.env.SMTP_FROM_NAME || "Restaurant Booking";
+export const EMAIL_ENABLED = process.env.EMAIL_ENABLED !== "false";
+export const EMAIL_DEBUG = process.env.EMAIL_DEBUG === "true";

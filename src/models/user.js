@@ -23,7 +23,14 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      email: DataTypes.STRING,
+      email: {
+        type: DataTypes.STRING(150),
+        allowNull: true,
+        unique: true,
+        validate: {
+          isEmail: true,
+        },
+      },
       password_hash: {
         type: DataTypes.STRING,
         allowNull: true, // cho phép null để giữ backward compatible

@@ -29,7 +29,11 @@ const toVNDateTime = (value) => {
 const buildDateTimeFromDateAndTime = (dateStr, timeStr) => {
   if (!dateStr || !timeStr) return null;
 
-  const dt = dayjs.tz(`${dateStr} ${timeStr}`, "YYYY-MM-DD HH:mm");
+  const dt = dayjs.tz(
+    `${dateStr} ${timeStr}`,
+    "YYYY-MM-DD HH:mm",
+    "Asia/Ho_Chi_Minh"
+  );
 
   if (!dt.isValid()) return null;
 

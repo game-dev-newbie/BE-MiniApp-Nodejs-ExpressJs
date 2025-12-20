@@ -9,8 +9,9 @@ import {
   NOTIFICATION_TYPE,
 } from "../constants/index.js";
 import * as notificationService from "./notification.service.js";
+import * as emailService from "./email.service.js"; // ✅ NEW
 
-const { Booking } = models;
+const { Booking, User, Restaurant } = models;
 
 /**
  * Tính toán thông tin đặt cọc ban đầu cho booking
@@ -50,6 +51,9 @@ export const computeInitialPaymentForBooking = (restaurant) => {
  *    - booking.status đang PENDING (hoặc CONFIRMED nếu bạn cho phép, nhưng tôi khoá ở PENDING cho rõ)
  *    - payment_status là PENDING hoặc FAILED (cho phép retry nếu trước đó FAILED)
  */
+
+// ...  existing functions (computeInitialPaymentForBooking)
+
 export const payDepositForBooking = async (userId, bookingId, payload) => {
   const { provider, mock_result } = payload;
 
@@ -81,14 +85,17 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
     );
   }
 
-  // Validate provider (optional, nhưng nên có cho sạch)
   if (provider && !Object.values(PAYMENT_PROVIDER).includes(provider)) {
     throw new AppError("Phương thức thanh toán không hợp lệ", 400);
   }
 
   const result = (mock_result || "SUCCESS").toUpperCase();
 
-  // CASE: giả lập thất bại
+  // ✅ Lấy thông tin user và restaurant để gửi email
+  const user = await User.findByPk(userId);
+  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
+
+  // CASE:  giả lập thất bại
   if (result === "FAILED") {
     booking.payment_status = PAYMENT_STATUS.FAILED;
     booking.payment_provider = null;
@@ -96,6 +103,7 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
     booking.paid_at = null;
     await booking.save();
 
+    // Thông báo
     await notificationService.createNotification({
       userId,
       type: NOTIFICATION_TYPE.BOOKING_PAYMENT_FAILED,
@@ -103,6 +111,16 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
       message:
         "Thanh toán đặt cọc cho booking của bạn không thành công, vui lòng thử lại.",
     });
+
+    // ✅ NEW: Gửi email thanh toán thất bại
+    try {
+      await emailService.sendPaymentFailedEmail(booking, user, restaurant);
+      console.log("✅ Email thanh toán thất bại đã được gửi");
+    } catch (err) {
+      console.error("❌ Lỗi khi gửi email thanh toán thất bại:", err);
+      // Không throw error - payment vẫn đã được xử lý
+    }
+
     return booking;
   }
 
@@ -111,10 +129,7 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
     booking.payment_status = PAYMENT_STATUS.PAID;
     booking.payment_provider = provider || PAYMENT_PROVIDER.ZALOPAY;
     booking.paid_at = new Date();
-
-    // Mã giao dịch giả lập cho đẹp
     booking.payment_reference = `PAY-${booking.id}-${Date.now()}`;
-
     await booking.save();
 
     // Thông báo cho khách
@@ -132,6 +147,16 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
       title: "Booking đã thanh toán cọc",
       message: "Một booking đã được khách thanh toán cọc.",
     });
+
+    // ✅ NEW: Gửi email xác nhận thanh toán thành công
+    try {
+      await emailService.sendPaymentSuccessEmail(booking, user, restaurant);
+      console.log("✅ Email xác nhận thanh toán đã được gửi tới:", user.email);
+    } catch (err) {
+      console.error("❌ Lỗi khi gửi email xác nhận thanh toán:", err);
+      // Không throw error - thanh toán đã thành công rồi
+    }
+
     return booking;
   }
 
@@ -157,22 +182,24 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
  * @param {Object} options
  * @param {"USER"|"RESTAURANT"} options.by - ai là người huỷ (dùng cho policy sau này nếu cần phân biệt)
  */
-export const maybeRefundDepositOnCancel = (booking, { by } = {}) => {
-  // Không có cọc, khỏi làm gì
-  if (!booking.deposit_amount || booking.deposit_amount <= 0) {
-    return booking;
-  }
+// ✅ NEW: Update refund function để gửi email
+export const maybeRefundDepositOnCancel = async (booking, { by } = {}) => {
+  if (booking.deposit_amount <= 0) return;
+  if (booking.payment_status !== PAYMENT_STATUS.PAID) return;
 
-  // Chỉ hoàn cọc nếu đã PAID
-  if (booking.payment_status !== PAYMENT_STATUS.PAID) {
-    return booking;
-  }
-
-  // Policy hiện tại: bất kể by là USER hay RESTAURANT,
-  // nếu booking bị huỷ (do người dùng yêu cầu), thì hoàn cọc.
-  // (Bạn có thể tách policy sau, vd NO_SHOW thì không được gọi hàm này)
   booking.payment_status = PAYMENT_STATUS.REFUNDED;
   booking.refunded_at = new Date();
 
-  return booking;
+  // ✅ Gửi email xác nhận hoàn tiền
+  try {
+    const user = await User.findByPk(booking.user_id);
+    const restaurant = await Restaurant.findByPk(booking.restaurant_id);
+
+    if (user && restaurant) {
+      await emailService.sendRefundEmail(booking, user, restaurant);
+      console.log("✅ Email xác nhận hoàn tiền đã được gửi");
+    }
+  } catch (err) {
+    console.error("❌ Lỗi khi gửi email hoàn tiền:", err);
+  }
 };
