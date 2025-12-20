@@ -1,4 +1,6 @@
+// src/controllers/auth.controller.js
 import * as authService from "../services/auth.service.js";
+import * as passwordResetService from "../services/passwordReset.service.js";
 import { catchAsync } from "../utils/catchAsync.js";
 
 import {
@@ -151,6 +153,78 @@ class AuthController {
       message: "Đăng xuất phiên hiện tại thành công",
     });
   });
+
+  /**
+   * Forgot Password - Dashboard
+   * POST /v1/dashboard/auth/forgot-password
+   */
+  forgotPasswordDashboard = catchAsync(async (req, res, next) => {
+    const { email } = req.body;
+
+    const result = await passwordResetService.forgotPasswordDashboard(email);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  });
+
+  /**
+   * Reset Password - Dashboard
+   * POST /v1/dashboard/auth/reset-password
+   */
+  resetPasswordDashboard = catchAsync(async (req, res, next) => {
+    const { email, reset_token, new_password } = req.body;
+
+    const result = await passwordResetService.resetPasswordDashboard(
+      email,
+      reset_token,
+      new_password
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  });
+
+
+  /**
+   * Forgot Password - MiniApp
+   * POST /v1/miniapp/auth/forgot-password
+   */
+  forgotPasswordMiniApp = catchAsync(async (req, res, next) => {
+    const { email } = req.body;
+
+    const result = await passwordResetService.forgotPasswordMiniApp(email);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  });
+
+  /**
+   * Reset Password - MiniApp
+   * POST /v1/miniapp/auth/reset-password
+   */
+  resetPasswordMiniApp = catchAsync(async (req, res, next) => {
+    const { email, reset_token, new_password } = req.body;
+
+    const result = await passwordResetService.resetPasswordMiniApp(
+      email,
+      reset_token,
+      new_password
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  });
+
+ 
+
 }
 
 const authController = new AuthController();

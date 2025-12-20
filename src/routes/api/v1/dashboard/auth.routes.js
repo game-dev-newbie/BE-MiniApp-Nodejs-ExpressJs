@@ -5,6 +5,8 @@ import {
   DashboardLoginDto,
   DashboardOwnerRegisterDto,
   DashboardStaffRegisterDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
 } from "../../../../dtos/index.js";
 import authController from "../../../../controllers/auth.controller.js";
 
@@ -29,6 +31,29 @@ router.post(
   "/login",
   validate(DashboardLoginDto, "body"),
   authController.loginDashboard
+);
+
+/**
+ * Forgot Password
+ * POST /v1/dashboard/auth/forgot-password
+ * Body: { email }
+ */
+router.post(
+  "/forgot-password",
+  validate(ForgotPasswordDto, "body"),
+  authController.forgotPasswordDashboard
+);
+
+
+/**
+ * Reset Password
+ * POST /v1/dashboard/auth/reset-password
+ * Body: { email, reset_token, new_password }
+ */
+router.post(
+  "/reset-password",
+  validate(ResetPasswordDto, "body"),
+  authController.resetPasswordDashboard
 );
 
 export default router;

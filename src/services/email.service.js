@@ -11,6 +11,7 @@ import {
   EMAIL_DEBUG,
   EMAIL_ENABLED,
 } from "../config/env.js";
+import { SUBJECT_TYPES } from "../constants/index.js";
 
 /**
  * Tạo transporter cho Gmail SMTP
@@ -208,6 +209,42 @@ export const sendBookingReminderEmail = async (
   return await sendEmail({
     to: user.email,
     subject,
+    html,
+  });
+};
+
+/**
+ * Gửi email reset password
+ */
+export const sendPasswordResetEmail = async ({
+  email,
+  displayName,
+  resetToken,
+  expiresInMinutes = 15,
+  subjectType,
+}) => {
+  if (!email) {
+    console.log("⚠️ Email không được cung cấp");
+    return { success: false, message: "Email is required" };
+  }
+
+  const { generatePasswordResetHTML } = await import(
+    "../templates/email/password-reset.template.js"
+  );
+
+  const html = generatePasswordResetHTML({
+    displayName,
+    resetToken,
+    expiresInMinutes,
+    subjectType,
+  });
+
+  const platformName =
+    subjectType === SUBJECT_TYPES.CUSTOMER ? "MiniApp" : "Dashboard";
+
+  return await sendEmail({
+    to: email,
+    subject: `🔐 Đặt lại mật khẩu ${platformName} - Mã đã được gửi vào email!`,
     html,
   });
 };

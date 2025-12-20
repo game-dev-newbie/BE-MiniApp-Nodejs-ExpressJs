@@ -8,6 +8,8 @@ export { default as DashboardStaffRegisterDto } from "./requests/auth/dashboardS
 export { default as ZaloLoginDto } from "./requests/auth/zaloLogin.dto.js";
 export { default as MiniAppRegisterDto } from "./requests/auth/miniAppRegister.dto.js";
 export { default as MiniAppLoginDto } from "./requests/auth/miniAppLogin.dto.js";
+export { default as ForgotPasswordDto } from "./requests/auth/forgotPassword.dto.js";
+export { default as ResetPasswordDto } from "./requests/auth/resetPassword.dto.js";
 
 // Dto dành cho restaurants
 export { default as RestaurantUpdateDto } from "./requests/restaurants/restaurantUpdate.dto.js";

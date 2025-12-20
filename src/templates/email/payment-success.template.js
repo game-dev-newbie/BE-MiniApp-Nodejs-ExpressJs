@@ -41,7 +41,7 @@ export const generatePaymentSuccessHTML = ({ booking, user, restaurant }) => {
       font-size: 28px;
       font-weight: 600;
     }
-    .header . icon {
+    .header .icon {
       font-size: 48px;
       margin-bottom:  10px;
     }
@@ -58,12 +58,12 @@ export const generatePaymentSuccessHTML = ({ booking, user, restaurant }) => {
       border-bottom: 2px solid #4CAF50;
       padding-bottom: 8px;
     }
-    . info-table {
+    .info-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
     }
-    . info-table td {
+    .info-table td {
       padding: 12px 8px;
       border-bottom: 1px solid #eee;
     }
@@ -106,7 +106,7 @@ export const generatePaymentSuccessHTML = ({ booking, user, restaurant }) => {
       margin-bottom: 8px;
       color: #856404;
     }
-    . footer {
+    .footer {
       background: #f8f8f8;
       padding: 20px;
       text-align: center;
