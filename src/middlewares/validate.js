@@ -25,8 +25,26 @@ const validate =
       return next(new AppError("Validation error", 400, { details }));
     }
 
-    // Gắn lại data đã được Joi “làm sạch”
-    req[property] = value;
+    // ✅ FIX: Only reassign if property is writable
+    // req. query and req.params are read-only in Express
+    try {
+      if (property === "body" || property === "headers") {
+        // These are writable
+        req[property] = value;
+      } else {
+        // For query/params, store in separate property
+        // This allows controllers to access validated data if needed
+        req[
+          `validated${property.charAt(0).toUpperCase()}${property.slice(1)}`
+        ] = value;
+      }
+    } catch (err) {
+      // If reassignment fails, just continue
+      // The validation already passed, so req[property] is valid
+      console.warn(
+        `⚠️ Could not reassign req.${property}, but validation passed`
+      );
+    }
     return next();
   };
 

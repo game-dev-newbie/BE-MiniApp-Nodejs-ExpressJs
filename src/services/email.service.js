@@ -170,3 +170,44 @@ export const sendTestEmail = async (toEmail) => {
     `,
   });
 };
+
+/**
+ * Gửi email nhắc nhở booking
+ * @param {Object} booking
+ * @param {Object} user
+ * @param {Object} restaurant
+ * @param {number} hoursUntil - Số giờ còn lại
+ */
+export const sendBookingReminderEmail = async (
+  booking,
+  user,
+  restaurant,
+  hoursUntil
+) => {
+  if (!user.email) {
+    console.log("⚠️ User không có email, skip gửi email nhắc nhở");
+    return { success: false, message: "User has no email" };
+  }
+
+  const { generateBookingReminderHTML } = await import(
+    "../templates/email/booking-reminder.template.js"
+  );
+
+  const html = generateBookingReminderHTML({
+    booking,
+    user,
+    restaurant,
+    hoursUntil,
+  });
+
+  const subject =
+    hoursUntil <= 2
+      ? `⏰ Nhắc nhở:  Booking #${booking.id} sắp đến giờ (${hoursUntil}h nữa)`
+      : `📅 Nhắc nhở: Booking #${booking.id} vào ngày mai`;
+
+  return await sendEmail({
+    to: user.email,
+    subject,
+    html,
+  });
+};

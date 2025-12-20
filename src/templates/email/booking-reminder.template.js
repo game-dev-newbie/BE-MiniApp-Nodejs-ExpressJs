@@ -1,6 +1,6 @@
 // src/templates/email/booking-reminder.template.js
 
-import time from "../../utils/time. js";
+import time from "../../utils/time.js";
 
 /**
  * Template email nhắc nhở booking
@@ -53,7 +53,7 @@ export const generateBookingReminderHTML = ({
       font-size: 28px;
       font-weight:  600;
     }
-    .header . icon {
+    .header .icon {
       font-size: 48px;
       margin-bottom:  10px;
     }

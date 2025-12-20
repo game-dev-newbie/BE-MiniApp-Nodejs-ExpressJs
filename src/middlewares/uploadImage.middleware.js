@@ -138,8 +138,14 @@ export const uploadSingleImageMiddleware = (req, res, next) => {
     }
 
     try {
-      const { scope, restaurant_id, table_id, user_id, restaurant_account_id } =
-        req.query;
+      // ✅ FIX: Read from req.uploadContext
+      const context = req.uploadContext || {};
+
+      const scope = context.scope;
+      const restaurant_id = context.restaurantId;
+      const table_id = context.tableId;
+      const user_id = context.userId;
+      const restaurant_account_id = context.restaurantAccountId;
 
       // Get directories
       const { webDir, diskDir } = buildDirsByScope(scope, {
@@ -229,8 +235,14 @@ export const uploadMultipleImagesMiddleware = (req, res, next) => {
     }
 
     try {
-      const { scope, restaurant_id, table_id, user_id, restaurant_account_id } =
-        req.query;
+      // ✅ FIX: Read from req. uploadContext
+      const context = req.uploadContext || {};
+
+      const scope = context.scope;
+      const restaurant_id = context.restaurantId;
+      const table_id = context.tableId;
+      const user_id = context.userId;
+      const restaurant_account_id = context.restaurantAccountId;
 
       const { webDir, diskDir } = buildDirsByScope(scope, {
         restaurantId: restaurant_id,

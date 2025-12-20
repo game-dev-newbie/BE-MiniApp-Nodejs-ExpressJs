@@ -51,12 +51,18 @@ export const validateRestaurantOwnership = async (req, res, next) => {
       throw new AppError("Nhà hàng đã bị vô hiệu hóa", 403);
     }
 
-    // ✅ Auto-inject restaurant_id to query
-    req.query.restaurant_id = String(account.restaurant_id);
+    // // ✅ Auto-inject restaurant_id to query
+    // req.query.restaurant_id = String(account.restaurant_id);
 
-    // ✅ Store validated data for later use
-    req.validatedRestaurantId = account.restaurant_id;
-    req.validatedAccountRole = account.role;
+    // // ✅ Store validated data for later use
+    // req.validatedRestaurantId = account.restaurant_id;
+    // req.validatedAccountRole = account.role;
+
+    // ✅ FIX: Store in req.uploadContext
+    req.uploadContext = {
+      restaurantId: account.restaurant_id,
+      role: account.role,
+    };
 
     console.log(
       `✅ Upload permission granted for restaurant ${account.restaurant_id} by account ${accountId}`
@@ -124,14 +130,21 @@ export const validateTableOwnership = async (req, res, next) => {
       );
     }
 
-    // ✅ Auto-inject both IDs to query
-    req.query.restaurant_id = String(account.restaurant_id);
-    req.query.table_id = String(table_id);
+    // // ✅ Auto-inject both IDs to query
+    // req.query.restaurant_id = String(account.restaurant_id);
+    // req.query.table_id = String(table_id);
 
-    // ✅ Store validated data
-    req.validatedRestaurantId = account.restaurant_id;
-    req.validatedTableId = Number(table_id);
-    req.validatedTableName = table.name;
+    // // ✅ Store validated data
+    // req.validatedRestaurantId = account.restaurant_id;
+    // req.validatedTableId = Number(table_id);
+    // req.validatedTableName = table.name;
+
+    // ✅ FIX:  Store in req.uploadContext
+    req.uploadContext = {
+      restaurantId: account.restaurant_id,
+      tableId: table.id,
+      role: account.role,
+    };
 
     console.log(
       `✅ Upload permission granted for table ${table_id} (${table.name}) of restaurant ${account.restaurant_id}`
@@ -167,12 +180,17 @@ export const validateUserOwnership = async (req, res, next) => {
       throw new AppError("User không tồn tại", 404);
     }
 
-    // ✅ Auto-inject user_id to query
-    req.query.user_id = String(userId);
+    // // ✅ Auto-inject user_id to query
+    // req.query.user_id = String(userId);
 
-    // ✅ Store validated data
-    req.validatedUserId = userId;
-    req.validatedUserName = user.display_name;
+    // // ✅ Store validated data
+    // req.validatedUserId = userId;
+    // req.validatedUserName = user.display_name;
+
+    // ✅ FIX:  Store in req.uploadContext
+    req.uploadContext = {
+      userId: userId,
+    };
 
     console.log(
       `✅ Upload permission granted for user ${userId} (${user.display_name})`
@@ -212,12 +230,17 @@ export const validateRestaurantAccountOwnership = async (req, res, next) => {
     }
 
     // ✅ Auto-inject restaurant_account_id to query
-    req.query.restaurant_account_id = String(accountId);
+    // req.query.restaurant_account_id = String(accountId);
 
-    // ✅ Store validated data
-    req.validatedRestaurantAccountId = accountId;
-    req.validatedAccountName = account.full_name;
-    req.validatedAccountRole = account.role;
+    // // ✅ Store validated data
+    // req.validatedRestaurantAccountId = accountId;
+    // req.validatedAccountName = account.full_name;
+    // req.validatedAccountRole = account.role;
+
+    // ✅ FIX:  Store in req.uploadContext
+    req.uploadContext = {
+      restaurantAccountId: accountId,
+    };
 
     console.log(
       `✅ Upload permission granted for account ${accountId} (${account.full_name})`

@@ -24,7 +24,7 @@ router.post(
   avatarUploadRateLimiter, // ✅ NEW:  Stricter limit for avatar changes
   validateUserOwnership, // ✅ NEW: Validate & auto-inject user_id
   (req, res, next) => {
-    req.query.scope = "user_avatar";
+    req.uploadContext.scope = "user_avatar";
     next();
   },
   uploadSingleImageMiddleware,

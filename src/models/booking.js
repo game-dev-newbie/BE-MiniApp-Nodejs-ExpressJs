@@ -71,6 +71,15 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+      // ✅ NEW: Reminder fields
+      reminder_sent_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      reminder_type: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+      },
       note: DataTypes.TEXT,
     },
     {

@@ -37,7 +37,8 @@ router.post(
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   validateRestaurantOwnership, // ✅ NEW: Validate & auto-inject restaurant_id
   (req, res, next) => {
-    req.query.scope = "restaurant_cover";
+    // ✅ FIX: Add scope to uploadContext
+    req.uploadContext.scope = "restaurant_cover";
     next();
   },
   uploadSingleImageMiddleware,
@@ -54,7 +55,7 @@ router.post(
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   validateRestaurantOwnership, // ✅ NEW
   (req, res, next) => {
-    req.query.scope = "restaurant_gallery";
+    req.uploadContext.scope = "restaurant_gallery";
     next();
   },
   uploadSingleImageMiddleware,
@@ -72,7 +73,7 @@ router.post(
   multipleUploadRateLimiter, // ✅ NEW:  Stricter limit for multiple uploads
   validateRestaurantOwnership, // ✅ NEW
   (req, res, next) => {
-    req.query.scope = "restaurant_gallery";
+    req.uploadContext.scope = "restaurant_gallery";
     next();
   },
   uploadMultipleImagesMiddleware,
@@ -89,7 +90,7 @@ router.post(
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   validateRestaurantOwnership, // ✅ NEW
   (req, res, next) => {
-    req.query.scope = "restaurant_menu";
+    req.uploadContext.scope = "restaurant_menu";
     next();
   },
   uploadSingleImageMiddleware,
@@ -107,7 +108,7 @@ router.post(
   multipleUploadRateLimiter, // ✅ NEW
   validateRestaurantOwnership, // ✅ NEW
   (req, res, next) => {
-    req.query.scope = "restaurant_menu";
+    req.uploadContext.scope = "restaurant_menu";
     next();
   },
   uploadMultipleImagesMiddleware,
@@ -129,7 +130,7 @@ router.post(
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
   validateTableOwnership, // ✅ NEW:  Validate table & auto-inject restaurant_id + table_id
   (req, res, next) => {
-    req.query.scope = "table_view";
+    req.uploadContext.scope = "table_view";
     next();
   },
   uploadSingleImageMiddleware,
@@ -151,7 +152,7 @@ router.post(
   avatarUploadRateLimiter, // ✅ NEW:  Stricter limit for avatar changes
   validateRestaurantAccountOwnership, // ✅ NEW: Validate & auto-inject restaurant_account_id
   (req, res, next) => {
-    req.query.scope = "restaurant_account_avatar";
+    req.uploadContext.scope = "restaurant_account_avatar";
     next();
   },
   uploadSingleImageMiddleware,
