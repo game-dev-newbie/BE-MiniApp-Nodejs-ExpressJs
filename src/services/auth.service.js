@@ -12,6 +12,10 @@ import {
   TOKEN_TYPES,
 } from "../constants/index.js";
 import { hashPassword, comparePassword } from "../utils/password.util.js";
+import {
+  _safeNotify,
+  notifyStaffRegistered,
+} from "../utils/notificationHelper.util.js";
 //import { fetchZaloProfile, fetchZaloPhoneNumber } from "../utils/zalo.util.js";
 
 import {
@@ -159,6 +163,8 @@ export const registerDashboardStaff = async (payload) => {
     role: RESTAURANT_ACCOUNT_ROLE.STAFF,
     status: RESTAURANT_ACCOUNT_STATUS.INVITED, // hoặc PENDING, tùy bạn dùng constant
   });
+
+  _safeNotify(() => notifyStaffRegistered(account, restaurant));
 
   // 5. Trả về thông tin tài khoản + nhà hàng (chưa có token)
   return { account, restaurant };

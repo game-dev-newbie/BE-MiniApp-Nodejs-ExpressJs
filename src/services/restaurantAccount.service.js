@@ -9,6 +9,11 @@ import {
   safeUnlinkByWebPath,
   isSameWebPath,
 } from "../utils/fileStorage.util.js";
+import {
+  _safeNotify,
+  notifyProfileUpdatedRestaurant,
+  notifyPasswordChangedRestaurant,
+} from "../utils/notificationHelper.util.js";
 
 const { RestaurantAccount } = models;
 
@@ -57,6 +62,13 @@ export const updateMyAccountProfile = async (accountId, payload) => {
 
   await account.save();
 
+  // Thông báo cho restaurant về việc cập nhật profile
+  if (account.restaurant_id) {
+    await _safeNotify(() =>
+      notifyProfileUpdatedRestaurant(account.restaurant_id, account.id)
+    );
+  }
+
   return account;
 };
 
@@ -101,6 +113,12 @@ export const changePasswordAndRevokeTokens = async (accountId, payload) => {
   // 4. Thu hồi toàn bộ refresh token của account này
   await revokeAllTokensForSubject(account.id, SUBJECT_TYPES.RESTAURANT_ACCOUNT);
 
+  // 5. Thông báo cho restaurant về việc đổi mật khẩu
+  if (account.restaurant_id) {
+    await _safeNotify(() =>
+      notifyPasswordChangedRestaurant(account.restaurant_id, account.id)
+    );
+  }
   // Thường đổi mật khẩu xong là bắt user login lại → không cần trả token mới
   return account;
 };

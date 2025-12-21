@@ -9,6 +9,11 @@ import {
   safeUnlinkByWebPath,
   isSameWebPath,
 } from "../utils/fileStorage.util.js";
+import {
+  _safeNotify,
+  notifyProfileUpdatedCustomer,
+  notifyPasswordChangedCustomer,
+} from "../utils/notificationHelper.util.js";
 
 const { User } = models;
 
@@ -56,6 +61,9 @@ export const updateMyMiniAppProfile = async (userId, payload) => {
     if (oldAvatar && newAvatar && !isSameWebPath(oldAvatar, newAvatar)) {
       await safeUnlinkByWebPath(oldAvatar);
     }
+
+    // Thông báo cho user về việc cập nhật profile
+    await _safeNotify(() => notifyProfileUpdatedCustomer(user.id));
 
     return user;
   }
@@ -108,6 +116,9 @@ export const changePasswordAndRevokeTokensMiniApp = async (userId, payload) => {
 
   // 4. Thu hồi toàn bộ refresh token của account này
   await revokeAllTokensForSubject(user.id, SUBJECT_TYPES.CUSTOMER);
+
+  // 5. Thông báo cho user về việc đổi mật khẩu
+  await _safeNotify(() => notifyPasswordChangedCustomer(user.id));
 
   // Thường đổi mật khẩu xong là bắt user login lại → không cần trả token mới
   return user;

@@ -5,6 +5,12 @@ import models from "../models/index.js";
 import { AppError } from "../utils/appError.js";
 import { BOOKING_STATUS, REVIEW_STATUS } from "../constants/index.js";
 import time from "../utils/time.js";
+import { recalculateRestaurantRating } from "../utils/reviewCalculation.util.js";
+import {
+  _safeNotify,
+  notifyReviewCreated,
+  notifyReviewReplied,
+} from "../utils/notificationHelper.util.js";
 
 const { Review, Booking, RestaurantAccount, Restaurant, User } = models;
 
@@ -91,6 +97,9 @@ export const createReviewFromBooking = async (userId, bookingId, payload) => {
     status: REVIEW_STATUS.VISIBLE,
   });
 
+  // ✅ NEW: Tính lại average_rating & review_count
+  await recalculateRestaurantRating(booking.restaurant_id);
+
   // Có thể include thêm quan hệ nếu cần cho response
   const fullReview = await Review.findByPk(review.id, {
     include: [
@@ -101,7 +110,10 @@ export const createReviewFromBooking = async (userId, bookingId, payload) => {
     ],
   });
 
-  // TODO: gửi notification REVIEW_CREATED cho dashboard nếu bạn muốn
+  // Thông báo cho nhà hàng về review mới
+  await _safeNotify(() =>
+    notifyReviewCreated(fullReview, fullReview.user, fullReview.restaurant)
+  );
 
   return fullReview;
 };
@@ -175,8 +187,14 @@ export const deleteMyReview = async (userId, reviewId) => {
     throw new AppError("Không tìm thấy review của user", 404);
   }
 
+  // ✅ Save restaurant_id trước khi xóa
+  const restaurantId = review.restaurant_id;
+
   // Hard delete: xóa hẳn record
   await review.destroy();
+
+  // ✅ NEW: Tính lại average_rating & review_count
+  await recalculateRestaurantRating(restaurantId);
 
   return true;
 };
@@ -333,11 +351,17 @@ export const replyReview = async (accountId, reviewId, payload) => {
 
   const fullReview = await Review.findByPk(review.id, {
     include: [
+      { model: Restaurant, as: "restaurant" },
       { model: User, as: "user" },
       { model: Booking, as: "booking" },
       { model: RestaurantAccount, as: "reply_account" },
     ],
   });
+
+  // Thông báo cho user về việc review đã được reply
+  await _safeNotify(() =>
+    notifyReviewReplied(fullReview, fullReview.restaurant)
+  );
 
   return fullReview;
 };

@@ -291,7 +291,7 @@ export const getRestaurantNotifications = async (
   // ----- Lọc theo khoảng thời gian created_at (from_time / to_time) -----
   const { start, end } = time.buildDayRange(from_time, to_time);
 
-  if (fromTime || toTime) {
+  if (start || end) {
     where.created_at = {};
     if (start) {
       where.created_at[Op.gte] = start;

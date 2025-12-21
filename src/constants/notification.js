@@ -23,12 +23,11 @@ export const NOTIFICATION_TYPE = Object.freeze({
 
   // Review
   REVIEW_CREATED: "REVIEW_CREATED", // có review mới
+  REVIEW_REPLIED: "REVIEW_REPLIED", // ✅ NEW
 
-  // Thay đổi mật khẩu
-  CHANGED_PASSWORD: "CHANGED_PASSWORD",
-
-  // Thay đổi thông tin cá nhân thành công
-  UPDATED_INFO_SUCCESS: "UPDATED_INFO_SUCCESS",
+  // ============ ACCOUNT ============
+  PASSWORD_CHANGED: "PASSWORD_CHANGED", // ✅ NEW
+  PROFILE_UPDATED: "PROFILE_UPDATED", // ✅ NEW
 
   // Dự phòng
   GENERIC: "GENERIC",

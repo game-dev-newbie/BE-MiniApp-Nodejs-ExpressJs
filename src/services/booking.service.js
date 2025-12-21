@@ -12,7 +12,19 @@ import {
 } from "../constants/index.js";
 import time from "../utils/time.js";
 import * as paymentService from "../services/payment.service.js";
-import * as notificationService from "../services/notification.service.js";
+import {
+  _safeNotify,
+  notifyBookingCancelledByCustomerToCustomer,
+  notifyBookingCancelledToDashboard,
+  notifyBookingCancelledToCustomer,
+  notifyBookingConfirmed,
+  notifyBookingCompleted,
+  notifyBookingCreatedToCustomer,
+  notifyBookingCreatedToDashboard,
+  notifyBookingNoShow,
+  notifyBookingUpdatedToCustomer,
+  notifyBookingUpdatedToDashboard,
+} from "../utils/notificationHelper.util.js";
 
 const { Booking, Restaurant, RestaurantTable, User, RestaurantAccount } =
   models;
@@ -236,24 +248,10 @@ export const createBookingForUser = async (userId, payload) => {
   });
 
   // Gửi notification cho khách (miniapp)
-  await notificationService.createNotification({
-    userId: user.id,
-    type: NOTIFICATION_TYPE.BOOKING_CREATED,
-    title: "Đặt bàn thành công",
-    message: `Bạn đã tạo booking mới tại ${restaurant.name} vào lúc ${booking.created_at}.`,
-  });
+  await _safeNotify(() => notifyBookingCreatedToCustomer(booking, restaurant));
 
   // Gửi notification cho dashboard (nhà hàng)
-  await notificationService.createNotification({
-    restaurantId: restaurant.id,
-    type: NOTIFICATION_TYPE.BOOKING_CREATED,
-    title: "Có booking mới",
-    message: `Khách ${
-      customer_name || user.display_name || user.phone || "ẩn danh"
-    } vừa đặt bàn vào lúc ${booking.created_at}.`,
-    targetType: NOTIFICATION_TARGET_TYPE.BOOKING,
-    targetId: booking.id,
-  });
+  await _safeNotify(() => notifyBookingCreatedToDashboard(booking, restaurant));
 
   return booking;
 };
@@ -328,10 +326,14 @@ export const getBookingDetailForUser = async (userId, bookingId) => {
 
 export const cancelBookingByUser = async (userId, bookingId) => {
   const booking = await Booking.findByPk(bookingId);
-  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
 
   if (!booking || booking.user_id !== userId) {
     throw new AppError("Booking không tồn tại", 404);
+  }
+
+  const restaurant = await Restaurant.findByPk(booking.restaurant_id);
+  if (!restaurant) {
+    throw new AppError("Nhà hàng không tồn tại", 404);
   }
 
   if (
@@ -350,20 +352,13 @@ export const cancelBookingByUser = async (userId, bookingId) => {
   await booking.save();
 
   // Thông báo cho khách
-  await notificationService.createNotification({
-    userId,
-    type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
-    title: "Huỷ booking thành công",
-    message: `Bạn đã huỷ booking của mình tại nhà hàng ${restaurant.name}.`,
-  });
-
+  await _safeNotify(() =>
+    notifyBookingCancelledByCustomerToCustomer(booking, restaurant)
+  );
   // Thông báo cho nhà hàng
-  await notificationService.createNotification({
-    restaurantId: booking.restaurant_id,
-    type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
-    title: "Khách huỷ booking",
-    message: "Một booking của khách đã bị huỷ.",
-  });
+  await _safeNotify(() =>
+    notifyBookingCancelledToDashboard(booking, restaurant)
+  );
 
   return booking;
 };
@@ -510,20 +505,16 @@ export const updateBookingByCustomer = async (userId, bookingId, payload) => {
   await booking.save();
 
   // Thông báo cho khách
-  await notificationService.createNotification({
-    userId,
-    type: NOTIFICATION_TYPE.BOOKING_UPDATED,
-    title: "Cập nhật booking thành công",
-    message: `Thông tin đặt bàn của bạn tại ${restaurant.name} đã được cập nhật.`,
-  });
+  await _safeNotify(() => notifyBookingUpdatedToCustomer(booking, restaurant));
 
   // Thông báo cho nhà hàng
-  await notificationService.createNotification({
-    restaurantId: booking.restaurant_id,
-    type: NOTIFICATION_TYPE.BOOKING_UPDATED,
-    title: "Booking được cập nhật",
-    message: `Khách có tên ${customer_nam} vừa cập nhật booking.`,
-  });
+  await _safeNotify(() =>
+    notifyBookingUpdatedToDashboard(
+      booking,
+      restaurant,
+      booking.customer_name // hoặc user.display_name nếu bạn fetch thêm user
+    )
+  );
 
   return booking;
 };
@@ -582,16 +573,15 @@ export const confirmBooking = async (accountId, bookingId) => {
     );
   }
 
+  if (!restaurant) {
+    throw new AppError("Nhà hàng không tồn tại", 404);
+  }
+
   booking.status = BOOKING_STATUS.CONFIRMED;
   await booking.save();
 
   // Thông báo cho khách
-  await notificationService.createNotification({
-    userId: booking.user_id,
-    type: NOTIFICATION_TYPE.BOOKING_CONFIRMED,
-    title: "Booking được xác nhận",
-    message: `Nhà hàng: ${restaurant.name} đã xác nhận yêu cầu đặt bàn của bạn.`,
-  });
+  await _safeNotify(() => notifyBookingConfirmed(booking, restaurant));
 
   return booking;
 };
@@ -608,6 +598,9 @@ export const cancelBookingByRestaurant = async (accountId, bookingId) => {
       400
     );
   }
+  if (!restaurant) {
+    throw new AppError("Nhà hàng không tồn tại", 404);
+  }
 
   // Nếu nhà hàng huỷ mà booking đã thanh toán cọc -> nên hoàn cọc cho khách
   paymentService.maybeRefundDepositOnCancel(booking, { by: "RESTAURANT" });
@@ -616,12 +609,9 @@ export const cancelBookingByRestaurant = async (accountId, bookingId) => {
   await booking.save();
 
   // Thông báo cho khách
-  await notificationService.createNotification({
-    userId: booking.user_id,
-    type: NOTIFICATION_TYPE.BOOKING_CANCELLED,
-    title: "Booking bị huỷ",
-    message: `Nhà hàng: ${restaurant.name} đã huỷ booking của bạn.`,
-  });
+  await _safeNotify(() =>
+    notifyBookingCancelledToCustomer(booking, restaurant)
+  );
 
   return booking;
 };
@@ -636,17 +626,15 @@ export const completeBooking = async (accountId, bookingId) => {
       400
     );
   }
+  if (!restaurant) {
+    throw new AppError("Nhà hàng không tồn tại", 404);
+  }
 
   booking.status = BOOKING_STATUS.COMPLETED;
   await booking.save();
 
   // Thông báo cho khách
-  await notificationService.createNotification({
-    userId: booking.user_id,
-    type: NOTIFICATION_TYPE.BOOKING_CHECKED_IN,
-    title: "Check-in thành công",
-    message: `Nhà hàng: ${restaurant.name} đã check-in cho bạn. Chúc bạn dùng bữa ngon miệng!`,
-  });
+  await _safeNotify(() => notifyBookingCompleted(booking, restaurant));
 
   return booking;
 };
@@ -662,6 +650,9 @@ export const markNoShow = async (accountId, bookingId) => {
       "Chỉ có thể đánh dấu NO_SHOW cho booking đang ở trạng thái CONFIRMED",
       400
     );
+  }
+  if (!restaurant) {
+    throw new AppError("Nhà hàng không tồn tại", 404);
   }
 
   // Check thời gian: chỉ được no_show khi đã qua giờ booking
@@ -683,12 +674,7 @@ export const markNoShow = async (accountId, bookingId) => {
   await booking.save();
 
   // Thông báo cho khách
-  await notificationService.createNotification({
-    userId: booking.user_id,
-    type: NOTIFICATION_TYPE.BOOKING_NO_SHOW,
-    title: "Bạn đã không đến nhà hàng",
-    message: `Booking của bạn đã bị nhà hàng ${restaurant.name} đánh dấu là không đến (no-show). Nếu đây là nhầm lẫn, hãy liên hệ nhà hàng.`,
-  });
+  await _safeNotify(() => notifyBookingNoShow(booking, restaurant));
 
   return booking;
 };

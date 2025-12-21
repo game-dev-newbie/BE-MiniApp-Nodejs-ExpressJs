@@ -21,6 +21,7 @@ router.post(
 );
 
 // Cả OWNER + STAFF đều được xem danh sách & chi tiết ảnh
+// GET /v1/dashboard/restaurant-images
 router.get(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
@@ -29,6 +30,7 @@ router.get(
 );
 
 // Cả OWNER + STAFF đều được xem chi tiết ảnh
+// GET /v1/dashboard/restaurant-images/:id
 router.get(
   "/:id",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),

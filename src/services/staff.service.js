@@ -6,8 +6,15 @@ import {
   RESTAURANT_ACCOUNT_ROLE,
   RESTAURANT_ACCOUNT_STATUS,
 } from "../constants/index.js";
+import {
+  _safeNotify,
+  notifyStaffApproved,
+  notifyStaffRejected,
+  notifyStaffLocked,
+  notifyStaffUnlocked,
+} from "../utils/notificationHelper.util.js";
 
-const { RestaurantAccount } = models;
+const { RestaurantAccount, Restaurant } = models;
 
 /**
  * Helper: lấy owner account từ req (bạn pass req.restaurantAccount.id vào cũng được)
@@ -113,6 +120,13 @@ export const approveStaff = async (ownerAccountId, staffAccountId) => {
   staff.is_locked = false; // duyệt xong thì luôn mở khóa
 
   await staff.save();
+
+  // Thông báo cho staff
+  const restaurant = await Restaurant.findByPk(staff.restaurant_id);
+  if (restaurant) {
+    await _safeNotify(() => notifyStaffApproved(staff, restaurant));
+  }
+
   return staff;
 };
 
@@ -134,6 +148,11 @@ export const rejectStaff = async (ownerAccountId, staffAccountId) => {
   staff.status = RESTAURANT_ACCOUNT_STATUS.REJECTED;
   await staff.save();
 
+  // Thông báo cho staff
+  const restaurant = await Restaurant.findByPk(staff.restaurant_id);
+  if (restaurant) {
+    await _safeNotify(() => notifyStaffRejected(staff, restaurant));
+  }
   return staff;
 };
 
@@ -158,6 +177,12 @@ export const lockStaff = async (ownerAccountId, staffAccountId) => {
   staff.is_locked = true;
   await staff.save();
 
+  // Thông báo cho staff
+  const restaurant = await Restaurant.findByPk(staff.restaurant_id);
+  if (restaurant) {
+    await _safeNotify(() => notifyStaffLocked(staff, restaurant));
+  }
+
   return staff;
 };
 
@@ -181,6 +206,12 @@ export const unlockStaff = async (ownerAccountId, staffAccountId) => {
 
   staff.is_locked = false;
   await staff.save();
+
+  // Thông báo cho staff
+  const restaurant = await Restaurant.findByPk(staff.restaurant_id);
+  if (restaurant) {
+    await _safeNotify(() => notifyStaffUnlocked(staff, restaurant));
+  }
 
   return staff;
 };

@@ -44,3 +44,6 @@ export const SMTP_FROM_NAME =
   process.env.SMTP_FROM_NAME || "Restaurant Booking";
 export const EMAIL_ENABLED = process.env.EMAIL_ENABLED !== "false";
 export const EMAIL_DEBUG = process.env.EMAIL_DEBUG === "true";
+
+// Other configurations can be added here as needed
+export const VERCEL_URL = process.env.VERCEL_URL || "";
