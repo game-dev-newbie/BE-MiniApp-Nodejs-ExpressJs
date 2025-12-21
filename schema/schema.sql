@@ -97,6 +97,8 @@ CREATE TABLE `bookings` (
   `payment_reference` varchar(255),
   `paid_at` datetime,
   `refunded_at` datetime,
+  `reminder_send_at` datetime,
+  `reminder_type` varchar(20),
   `note` text,
   `created_at` datetime,
   `updated_at` datetime
@@ -162,6 +164,17 @@ CREATE TABLE `restaurant_images` (
   `updated_at` datetime
 );
 
+CREATE TABLE `password_reset_tokens` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `email` varchar(150) NOT NULL COMMENT 'Email của user/account request reset',
+  `subject_type` varchar(50) NOT NULL COMMENT 'CUSTOMER (users) hoặc RESTAURANT_ACCOUNT',
+  `reset_token` varchar(100) UNIQUE NOT NULL COMMENT 'Token để reset password (6 chữ số hoặc random string)',
+  `expires_at` datetime NOT NULL COMMENT 'Thời điểm token hết hạn (15 phút sau khi tạo)',
+  `used_at` datetime COMMENT 'Thời điểm token đã được sử dụng',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+);
+
 CREATE UNIQUE INDEX `user_auth_providers_index_0` ON `user_auth_providers` (`provider`, `provider_user_id`);
 
 CREATE INDEX `auth_tokens_index_1` ON `auth_tokens` (`subject_id`, `subject_type`, `type`);
@@ -177,6 +190,12 @@ CREATE INDEX `bookings_index_5` ON `bookings` (`user_id`, `booking_time`);
 CREATE UNIQUE INDEX `reviews_index_6` ON `reviews` (`booking_id`);
 
 CREATE UNIQUE INDEX `favorite_restaurants_index_7` ON `favorite_restaurants` (`user_id`, `restaurant_id`);
+
+CREATE INDEX `idx_password_reset_tokens_email` ON `password_reset_tokens` (`email`);
+
+CREATE INDEX `idx_password_reset_tokens_token` ON `password_reset_tokens` (`reset_token`);
+
+CREATE INDEX `idx_password_reset_tokens_lookup` ON `password_reset_tokens` (`email`, `subject_type`, `used_at`);
 
 ALTER TABLE `user_auth_providers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 

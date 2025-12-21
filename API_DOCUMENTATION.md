@@ -1,6 +1,6 @@
 # 📚 RESTAURANT BOOKING SYSTEM - API DOCUMENTATION
 
-**Base URL:** `http://localhost:8027/api`  
+**Base URL:** `http://localhost:8027`  
 **(tùy, nếu sử dụng chung máy local, khác thì dùng static domain)**
 **Version:** v1  
 **Last Updated:** 2025-12-20  
@@ -19,34 +19,36 @@
   - [2.1. Register Owner](#21-register-owner)
   - [2.2. Register Staff](#22-register-staff)
   - [2.3. Login Dashboard](#23-login-dashboard)
+  - [2.4. Forget Password](#24-forget-password)
+  - [2.5. Reset Password](#25-reset-password)
 - [3. MiniApp Authentication](#3-miniapp-authentication)
   - [3.1. Login with Zalo](#31-login-with-zalo)
   - [3.2. Register Local](#32-register-local)
   - [3.3. Login Local](#33-login-local)
-  - [3.4. Refresh Token](#34-refresh-token)
-  - [3.5. Logout](#35-logout)
+- [4. Refresh Token](#4-refresh-token)
+- [5. Logout](#5-logout)
 
 ### PART 2: DASHBOARD APIs
 
-- [4. Restaurant Management](#4-restaurant-management)
-- [5. Table Management](#5-table-management)
-- [6. Booking Management](#6-booking-management)
-- [7. Review Management](#7-review-management)
-- [8. Staff Management](#8-staff-management)
-- [9. Upload Management](#9-upload-management)
-- [10. Restaurant Images](#10-restaurant-images)
-- [11. Notifications (Dashboard)](#11-notifications-dashboard)
-- [12. Account Management (Dashboard)](#12-account-management-dashboard)
+- [6. Restaurant Management](#4-restaurant-management)
+- [7. Table Management](#5-table-management)
+- [8. Booking Management](#6-booking-management)
+- [9. Review Management](#7-review-management)
+- [10. Staff Management](#8-staff-management)
+- [11. Upload Management](#9-upload-management)
+- [12. Restaurant Images](#10-restaurant-images)
+- [13. Notifications (Dashboard)](#11-notifications-dashboard)
+- [14. Account Management (Dashboard)](#12-account-management-dashboard)
 
 ### PART 3: MINIAPP APIs
 
-- [13. Restaurant Discovery](#13-restaurant-discovery)
-- [14. Booking Flow](#14-booking-flow)
-- [15. Payment](#15-payment)
-- [16. Reviews](#16-reviews)
-- [17. Favorites](#17-favorites)
-- [18. User Profile](#18-user-profile)
-- [19. Notifications (MiniApp)](#19-notifications-miniapp)
+- [15. Restaurant Discovery](#13-restaurant-discovery)
+- [16. Booking Flow](#14-booking-flow)
+- [17. Payment](#15-payment)
+- [18. Reviews](#16-reviews)
+- [19. Favorites](#17-favorites)
+- [20. User Profile](#18-user-profile)
+- [21. Notifications (MiniApp)](#19-notifications-miniapp)
 
 ### APPENDIX
 
@@ -121,7 +123,7 @@ Authorization: Bearer <access_token>
 
 ### 2.1. Register Owner
 
-**Endpoint:** `POST /v1/dashboard/auth/register/owner`
+**Endpoint:** `POST /api/v1/dashboard/auth/register/owner`
 
 **Description:** Đăng ký tài khoản OWNER + tạo nhà hàng mới
 
@@ -178,7 +180,7 @@ Authorization: Bearer <access_token>
 
 ### 2.2. Register Staff
 
-**Endpoint:** `POST /v1/dashboard/auth/register/staff`
+**Endpoint:** `POST /api/v1/dashboard/auth/register/staff`
 
 **Description:** Nhân viên đăng ký bằng invite_code từ OWNER
 
@@ -219,7 +221,7 @@ Authorization: Bearer <access_token>
 
 ### 2.3. Login Dashboard
 
-**Endpoint:** `POST /v1/dashboard/auth/login`
+**Endpoint:** `POST /api/v1/dashboard/auth/login`
 
 **Description:** Đăng nhập dashboard (Owner/Staff)
 
@@ -302,7 +304,7 @@ Authorization: Bearer <access_token>
 
 ### 3.1. Login with Zalo
 
-**Endpoint:** `POST /v1/miniapp/auth/zalo/login`
+**Endpoint:** `POST /api/v1/miniapp/auth/zalo/login`
 
 **Description:** Đăng nhập MiniApp bằng tài khoản Zalo
 
@@ -317,7 +319,7 @@ const { userInfo } = await getUserInfo();
 
 // Miniapp tự gọi api của zalo hỗ trợ và lấy thông tin, sau đó truyền vào req.body gửi lên cho server. Đây là giả lập code
 // 2. Call API
-const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
+const response = await fetch("${base_URL}/api/v1/miniapp/auth/zalo/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -372,7 +374,7 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ### 3.2. Register Local
 
-**Endpoint:** `POST /v1/miniapp/auth/register`
+**Endpoint:** `POST /api/v1/miniapp/auth/register`
 
 **Description:** Đăng ký tài khoản local (email/password) cho MiniApp
 
@@ -414,7 +416,7 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ### 3.3. Login Local
 
-**Endpoint:** `POST /v1/miniapp/auth/login`
+**Endpoint:** `POST /api/v1/miniapp/auth/login`
 
 **Description:** Đăng nhập MiniApp bằng email/password
 
@@ -451,9 +453,9 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-### 3.4. Refresh Token
+## 4. Refresh Token
 
-**Endpoint:** `POST /v1/common/auth/refresh`
+**Endpoint:** `POST /api/v1/common/auth/refresh`
 
 **Description:** Làm mới access token (dùng chung cho cả Dashboard & MiniApp)
 
@@ -478,9 +480,9 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 }
 ```
 
-### 3.5. Logout
+## 5. Logout
 
-**Endpoint:** `POST /v1/common/auth/logout`
+**Endpoint:** `POST /api/v1/common/auth/logout`
 
 **Description:** Đăng xuất thu hồi token (dùng chung cho cả Dashboard & MiniApp)
 
@@ -505,18 +507,18 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ## PART 2: DASHBOARD APIs
 
-## 4. RESTAURANT MANAGEMENT
+## 6. RESTAURANT MANAGEMENT
 
-### 4.1. Get My Restaurant (xem thông tin nhà hàng)
+### 6.1. Get My Restaurant (xem thông tin nhà hàng)
 
-**Endpoint:** `GET /v1/dashboard/restaurants/me`
+**Endpoint:** `GET /api/v1/dashboard/restaurants/me`
 
 **Auth Required:** ✅ Owner/Staff (cả staff và owner đều xem được thông tin)
 
 **Request body**
 
 ```http
-`GET /v1/dashboard/restaurants/me`
+`GET /api/v1/dashboard/restaurants/me`
 `Authorization: Bearer <access_token>`
 ```
 
@@ -551,9 +553,9 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-### 4.2. Update My Restaurant
+### 6.2. Update My Restaurant
 
-**Endpoint:** `PATCH /v1/dashboard/restaurants/me`
+**Endpoint:** `PATCH /api/v1/dashboard/restaurants/me`
 
 **Auth Required:** ✅ Owner only (chỉ owner được phép dùng chức năng)
 
@@ -592,11 +594,11 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-## 5. TABLE MANAGEMENT
+## 7. TABLE MANAGEMENT
 
-### 5.1. List Tables
+### 7.1. List Tables
 
-**Endpoint:** `GET /v1/dashboard/tables`
+**Endpoint:** `GET /api/v1/dashboard/tables`
 
 **Auth Required:** ✅ Owner/Staff (cả staff và owner đều dùng được)
 
@@ -608,7 +610,7 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 **Request**
 
 ```http
-`GET /v1/dashboard/tables?limit=10&offset=0` (ví dụ limit thôi)
+`GET /api/v1/dashboard/tables?limit=10&offset=0` (ví dụ limit thôi)
 `Authorization: Bearer <access_token>`
 ```
 
@@ -643,16 +645,16 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 }
 ```
 
-### 5.2. Get detail table
+### 7.2. Get detail table
 
-**Endpoint:** `GET /v1/dashboard/tables/:id`
+**Endpoint:** `GET /api/v1/dashboard/tables/:id`
 
 **Auth Required:** ✅ Owner/Staff (cả staff và owner đều dùng được)
 
 **Request**
 
 ```http
-`GET /v1/dashboard/tables/1` (ví dụ muốn xem chi tiết tables_id = 1)
+`GET /api/v1/dashboard/tables/1` (ví dụ muốn xem chi tiết tables_id = 1)
 `Authorization: Bearer <access_token>`
 ```
 
@@ -679,9 +681,9 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-### 5.3. Create Table
+### 7.3. Create Table
 
-**Endpoint:** `POST /v1/dashboard/tables`
+**Endpoint:** `POST /api/v1/dashboard/tables`
 
 **Auth Required:** ✅ Owner only (chỉ owner được phép tạo bàn mới)
 
@@ -722,9 +724,9 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-### 5.4. Update Table
+### 7.4. Update Table
 
-**Endpoint:** `PATCH /v1/dashboard/tables/:id`
+**Endpoint:** `PATCH /api/v1/dashboard/tables/:id`
 
 **Auth Required:** ✅ Owner only
 **Request body**
@@ -755,15 +757,15 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-### 5.5. Delete Table
+### 7.5. Delete Table
 
-**Endpoint:** `DELETE /v1/dashboard/tables/:id`
+**Endpoint:** `DELETE /api/v1/dashboard/tables/:id`
 
 **Auth Required:** ✅ Owner only
 **Request**
 
 ```http
-`DELETE /v1/dashboard/tables/3`
+`DELETE /api/v1/dashboard/tables/3`
 `Authorization: Bearer <access_token>`
 ```
 
@@ -772,7 +774,8 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 ```json
 {
   "success": true,
-  "message": "Xoá bàn thành công"
+  "message": "Đặt trạng thái INACTIVE cho bàn thành công",
+  "data": `model Table`
 }
 ```
 
@@ -780,11 +783,11 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-## 6. BOOKING MANAGEMENT
+## 8. BOOKING MANAGEMENT
 
-### 6.1. List Bookings
+### 8.1. List Bookings
 
-**Endpoint:** `GET /v1/dashboard/bookings`
+**Endpoint:** `GET /api/v1/dashboard/bookings`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -799,7 +802,7 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 **Request**
 
 ```http
-`GET /v1/dashboard/bookings?status=PENDING&from_date=2025-12-20&to_date=2025-12-31&limit=10`
+`GET /api/v1/dashboard/bookings?status=PENDING&from_date=2025-12-20&to_date=2025-12-31&limit=10`
 `Authorization: Bearer <access_token>`
 ```
 
@@ -833,7 +836,12 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
     "pagination": {
       "total": 45,
       "limit": 10,
-      "offset": 0
+      "offset": 0,
+      "page": 1,
+      "has_next": true/false,
+      "has_prev": true/false
+      "next_page",
+      "prev_page"
     }
   }
 }
@@ -841,9 +849,9 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 
 ---
 
-### 6.2. Search Bookings by Customer Name
+### 8.2. Search Bookings by Customer Name
 
-**Endpoint:** `GET /v1/dashboard/bookings/search`
+**Endpoint:** `GET /api/v1/dashboard/bookings/search`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -856,7 +864,7 @@ const response = await fetch("${base_URL}/v1/miniapp/auth/zalo/login", {
 **Request**
 
 ```http
-GET /v1/dashboard/bookings/search?q=Nguyễn&limit=10&offset=
+GET /api/v1/dashboard/bookings/search?q=Nguyễn&limit=10&offset=
 Authorization: Bearer <access_token>
 ```
 
@@ -881,6 +889,7 @@ Authorization: Bearer <access_token>
       "total": 3,
       "limit": 10,
       "offset": 0
+      tương tự thông số của các pagination khác
     }
   }
 }
@@ -888,16 +897,16 @@ Authorization: Bearer <access_token>
 
 ---
 
-### 6.3. Get Booking Detail
+### 8.3. Get Booking Detail
 
-**Endpoint:** `GET /v1/dashboard/bookings/:id`
+**Endpoint:** `GET /api/v1/dashboard/bookings/:id`
 
 **Auth Required:** ✅ Owner/Staff
 
 **Request**
 
 ```http
-GET /v1/dashboard/bookings/101
+GET /api/v1/dashboard/bookings/101
 Authorization: Bearer <access_token>
 ```
 
@@ -931,9 +940,9 @@ Authorization: Bearer <access_token>
 
 ---
 
-### 6.4. Confirm Booking
+### 8.4. Confirm Booking
 
-**Endpoint:** `PATCH /v1/dashboard/bookings/:id/confirm`
+**Endpoint:** `PATCH /api/v1/dashboard/bookings/:id/confirm`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -942,7 +951,7 @@ Authorization: Bearer <access_token>
 **Request**
 
 ```http
-PATCH /v1/dashboard/bookings/101/confirm
+PATCH /api/v1/dashboard/bookings/101/confirm
 Authorization: Bearer <access_token>
 ```
 
@@ -955,7 +964,11 @@ Authorization: Bearer <access_token>
   "data": {
     "id": 101,
     "status": "CONFIRMED",
-    "updated_at": "2025-12-20 16:00:00"
+    "updated_at": "2025-12-20 16:00:00",
+    "restaurant",
+    "tables",
+    "user"
+    ... các thông tin khác của model booking
   }
 }
 ```
@@ -967,16 +980,16 @@ Authorization: Bearer <access_token>
 
 ---
 
-### 6.5. Cancel Booking
+### 8.5. Cancel Booking
 
-**Endpoint:** `PATCH /v1/dashboard/bookings/:id/cancel`
+**Endpoint:** `PATCH /api/v1/dashboard/bookings/:id/cancel`
 
 **Auth Required:** ✅ Owner/Staff
 
 **Request**
 
 ```http
-PATCH /v1/dashboard/bookings/101/cancel
+PATCH /api/v1/dashboard/bookings/101/cancel
 Authorization:  Bearer <access_token>
 ```
 
@@ -991,6 +1004,7 @@ Authorization:  Bearer <access_token>
     "status": "CANCELLED",
     "payment_status": "REFUNDED",
     "refunded_at": "2025-12-20 16:30:00"
+    ` giống confirmed bên trên`
   }
 }
 ```
@@ -1003,9 +1017,9 @@ Authorization:  Bearer <access_token>
 
 ---
 
-### 6.6. Complete Booking (check-in)
+### 8.6. Complete Booking (check-in)
 
-**Endpoint:** `PATCH /v1/dashboard/bookings/:id/complete`
+**Endpoint:** `PATCH /api/v1/dashboard/bookings/:id/complete`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -1014,7 +1028,7 @@ Authorization:  Bearer <access_token>
 **Request**
 
 ```http
-PATCH /v1/dashboard/bookings/101/complete
+PATCH /api/v1/dashboard/bookings/101/complete
 Authorization:  Bearer <access_token>
 ```
 
@@ -1028,6 +1042,7 @@ Authorization:  Bearer <access_token>
     "id": 101,
     "status": "COMPLETED",
     "updated_at": "2025-12-21 19:30:00"
+    ` giống confirmed bên trên`
   }
 }
 ```
@@ -1038,9 +1053,9 @@ Authorization:  Bearer <access_token>
 
 ---
 
-### 6.7. Mark No-Show
+### 8.7. Mark No-Show
 
-**Endpoint:** `PATCH /v1/dashboard/bookings/:id/no-show`
+**Endpoint:** `PATCH /api/v1/dashboard/bookings/:id/no-show`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -1049,7 +1064,7 @@ Authorization:  Bearer <access_token>
 **Request**
 
 ```http
-PATCH /v1/dashboard/bookings/102/no-show
+PATCH /api/v1/dashboard/bookings/102/no-show
 Authorization: Bearer <access_token>
 ```
 
@@ -1064,6 +1079,7 @@ Authorization: Bearer <access_token>
     "status": "NO_SHOW",
     "payment_status": "PAID",
     "updated_at": "2025-12-21 20:00:00"
+    ` giống confirmed trên`
   }
 }
 ```
@@ -1072,11 +1088,11 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 7. REVIEW MANAGEMENT
+## 9. REVIEW MANAGEMENT
 
-### 7.1. List Restaurant Reviews
+### 9.1. List Restaurant Reviews
 
-**Endpoint:** `GET /v1/dashboard/reviews`
+**Endpoint:** `GET /api/v1/dashboard/reviews`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -1092,7 +1108,7 @@ Authorization: Bearer <access_token>
 **Request**
 
 ```http
-GET /v1/dashboard/reviews?rating=5&limit=10
+GET /api/v1/dashboard/reviews?rating=5&limit=10
 Authorization: Bearer <access_token>
 ```
 
@@ -1130,9 +1146,9 @@ Authorization: Bearer <access_token>
 
 ---
 
-### 7.2. Reply to Review
+### 9.2. Reply to Review
 
-**Endpoint:** `PATCH /v1/dashboard/reviews/:id/reply`
+**Endpoint:** `PATCH /api/v1/dashboard/reviews/:id/reply`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -1155,7 +1171,8 @@ Authorization: Bearer <access_token>
     "reply_comment": "Cảm ơn quý khách đã tin tưởng!  Hẹn gặp lại!",
     "reply_account_id": 1,
     "reply_created_at": "2025-12-22 10:30:00",
-    "reply_updated_at": "2025-12-22 10:30:00"
+    "reply_updated_at": "2025-12-22 10:30:00",
+    ... còn các trường thông tin khác của reviews
   }
 }
 ```
@@ -1166,11 +1183,11 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 8. STAFF MANAGEMENT
+## 10. STAFF MANAGEMENT
 
-### 8.1. List Staff
+### 10.1. List Staff
 
-**Endpoint:** `GET /v1/dashboard/staff`
+**Endpoint:** `GET /api/v1/dashboard/staff`
 
 **Auth Required:** ✅ Owner only
 
@@ -1182,7 +1199,7 @@ Authorization: Bearer <access_token>
 **Request**
 
 ```http
-GET /v1/dashboard/staff?limit=10
+GET /api/v1/dashboard/staff?limit=10
 Authorization: Bearer <owner_access_token>
 ```
 
@@ -1228,9 +1245,9 @@ Authorization: Bearer <owner_access_token>
 
 ---
 
-### 8.2. Approve Staff
+### 10.2. Approve Staff
 
-**Endpoint:** `PATCH /v1/dashboard/staff/:id/approve`
+**Endpoint:** `PATCH /api/v1/dashboard/staff/:id/approve`
 
 **Auth Required:** ✅ Owner only
 
@@ -1239,7 +1256,7 @@ Authorization: Bearer <owner_access_token>
 **Request**
 
 ```http
-PATCH /v1/dashboard/staff/2/approve
+PATCH /api/v1/dashboard/staff/2/approve
 Authorization: Bearer <owner_access_token>
 ```
 
@@ -1259,9 +1276,9 @@ Authorization: Bearer <owner_access_token>
 
 ---
 
-### 8.3. Reject Staff
+### 10.3. Reject Staff
 
-**Endpoint:** `PATCH /v1/dashboard/staff/:id/reject`
+**Endpoint:** `PATCH /api/v1/dashboard/staff/:id/reject`
 
 **Auth Required:** ✅ Owner only
 
@@ -1270,7 +1287,7 @@ Authorization: Bearer <owner_access_token>
 **Request**
 
 ```http
-PATCH /v1/dashboard/staff/2/reject
+PATCH /api/v1/dashboard/staff/2/reject
 Authorization: Bearer <owner_access_token>
 ```
 
@@ -1289,16 +1306,16 @@ Authorization: Bearer <owner_access_token>
 
 ---
 
-### 8.4. Lock Staff
+### 10.4. Lock Staff
 
-**Endpoint:** `PATCH /v1/dashboard/staff/:id/lock`
+**Endpoint:** `PATCH /api/v1/dashboard/staff/:id/lock`
 
 **Auth Required:** ✅ Owner only
 
 **Request**
 
 ```http
-PATCH /v1/dashboard/staff/3/lock
+PATCH /api/v1/dashboard/staff/3/lock
 Authorization: Bearer <owner_access_token>
 ```
 
@@ -1317,16 +1334,16 @@ Authorization: Bearer <owner_access_token>
 
 ---
 
-### 8.5. Unlock Staff
+### 10.5. Unlock Staff
 
-**Endpoint:** `PATCH /v1/dashboard/staff/:id/unlock`
+**Endpoint:** `PATCH /api/v1/dashboard/staff/:id/unlock`
 
 **Auth Required:** ✅ Owner only
 
 **Request**
 
 ```http
-PATCH /v1/dashboard/staff/3/unlock
+PATCH /api/v1/dashboard/staff/3/unlock
 Authorization: Bearer <owner_access_token>
 ```
 
@@ -1345,11 +1362,11 @@ Authorization: Bearer <owner_access_token>
 
 ---
 
-## 9. UPLOAD MANAGEMENT
+## 11. UPLOAD MANAGEMENT
 
-### 9.1. Upload Restaurant Cover
+### 11.1. Upload Restaurant Cover
 
-**Endpoint:** `POST /v1/dashboard/uploads/images/restaurants/cover`
+**Endpoint:** `POST /api/v1/dashboard/uploads/images/restaurants/cover`
 
 **Auth Required:** ✅ Owner/Staff
 
@@ -1358,7 +1375,7 @@ Authorization: Bearer <owner_access_token>
 **Request:**
 
 ```http
-POST /v1/dashboard/uploads/images/restaurants/cover
+POST /api/v1/dashboard/uploads/images/restaurants/cover
 Authorization: Bearer <access_token>
 Content-Type:  multipart/form-data
 
@@ -1381,10 +1398,12 @@ file: [binary image data]
     "mimeType": "image/jpeg",
     "size": 245678,
     "path": "/uploads/restaurants/1/cover/1703123456789-123456789.jpg",
-    "url": "http://localhost:3000/uploads/restaurants/1/cover/1703123456789-123456789.jpg"
+    "url": "http://localhost:8027/uploads/restaurants/1/cover/1703123456789-123456789.jpg"
   }
 }
 ```
+
+**Lưu ý: dùng path để hiển thị hình, sau đó dùng path để truyền vào req.body để gọi api tạo cập nhật hình**
 
 **Rate Limits:**
 
@@ -1394,62 +1413,215 @@ file: [binary image data]
 
 ---
 
-### 9.2. Upload Restaurant Gallery
+### 11.2. Upload Restaurant Gallery
 
-**Endpoint:** `POST /v1/dashboard/uploads/images/restaurants/gallery`
+**Endpoint:** `POST /api/v1/dashboard/uploads/images/restaurants/gallery`
 
 **Auth Required:** ✅ Owner/Staff
 
+**Request:** Same as cover upload
+
+**Response:** 201 Created (same format)
+
 ---
 
-### 9.3. Upload Restaurant Galleries (Multiple)
+### 11.3. Upload Restaurant Galleries (Multiple)
 
-**Endpoint:** `POST /v1/dashboard/uploads/images/restaurants/galleries`
+**Endpoint:** `POST /api/v1/dashboard/uploads/images/restaurants/galleries`
 
 **Auth Required:** ✅ Owner/Staff
 
 **Request:**
 
+```http
+POST /api/v1/dashboard/uploads/images/restaurants/galleries
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+
+files: [image1. jpg]
+files: [image2.jpg]
+files: [image3.jpg]
+```
+
 - Field name: `files`
 - Max: 10 files per request
 
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Upload ảnh thành công",
+  "data": [
+    {
+      "filename": "1703123456789-111. jpg",
+      "originalName": "gallery1.jpg",
+      "mimeType": "image/jpeg",
+      "size": 245678,
+      "path": "/uploads/restaurants/1/gallery/1703123456789-111.jpg",
+      "url": "http://localhost:8027/uploads/restaurants/1/gallery/1703123456789-111.jpg"
+    },
+    {
+      "filename": "1703123456789-222.jpg",
+      "originalName": "gallery2.jpg",
+      "mimeType": "image/jpeg",
+      "size": 245678,
+      "path": "/uploads/restaurants/1/gallery/1703123456789-222.jpg",
+      "url": "http://localhost:8027/uploads/restaurants/1/gallery/1703123456789-222.jpg"
+    }
+  ]
+}
+```
+
+**Note**
+
+- ✅ Max 10 files per request
+- ✅ Rate limit: 5 uploads/15 phút
+
 ---
 
-### 9.4. Upload Menu Images
+### 11.4. Upload Menu Images
 
-**Endpoint:** `POST /v1/dashboard/uploads/images/restaurants/menu`
+**Endpoint:** `POST /api/v1/dashboard/uploads/images/restaurants/menu`
 
 **Auth Required:** ✅ Owner/Staff
 
+**Request:** Same as gallery upload
+
+**Response:** 201 Created (same format)
+
 ---
 
-### 9.5. Upload Table View Image
+### 11.5. Upload Restaurant Menus (Multiple)
 
-**Endpoint:** `POST /v1/dashboard/uploads/images/tables/view? table_id=1`
+**Endpoint:** `POST /api/v1/dashboard/uploads/images/restaurants/menus`
+
+**Auth Required:** ✅ Owner/Staff
+
+**Request:**
+
+```http
+POST /api/v1/dashboard/uploads/images/restaurants/menus
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+
+files: [image1. jpg]
+files: [image2.jpg]
+files: [image3.jpg]
+```
+
+- Field name: `files`
+- Max: 10 files per request
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Upload ảnh thành công",
+  "data": [
+    {
+      "filename": "1703123456789-111. jpg",
+      "originalName": "gallery1.jpg",
+      "mimeType": "image/jpeg",
+      "size": 245678,
+      "path": "/uploads/restaurants/1/menu/1703123456789-111.jpg",
+      "url": "http://localhost:8027/uploads/restaurants/1/menu/1703123456789-111.jpg"
+    },
+    {
+      "filename": "1703123456789-222.jpg",
+      "originalName": "gallery2.jpg",
+      "mimeType": "image/jpeg",
+      "size": 245678,
+      "path": "/uploads/restaurants/1/menu/1703123456789-222.jpg",
+      "url": "http://localhost:8027/uploads/restaurants/1/menu/1703123456789-222.jpg"
+    }
+  ]
+}
+```
+
+**Note**
+
+- ✅ Max 10 files per request
+- ✅ Rate limit: 5 uploads/15 phút
+
+### 11.6. Upload Table View Image
+
+**Endpoint:** `POST /api/v1/dashboard/uploads/images/tables/view?table_id=1`
 
 **Auth Required:** ✅ Owner/Staff
 
 **Query Parameters:**
 
-- `table_id` - Required
+- `table_id` - Required: ID bàn
+
+**Request:**
+
+```http
+POST /api/v1/dashboard/uploads/images/tables/view?table_id=1
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+
+file: [binary image data]
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Upload ảnh thành công",
+  "data": {
+    "filename": "1703123456789-987654321.jpg",
+    "path": "/uploads/restaurants/1/tables/1/view/1703123456789-987654321.jpg",
+    "url": "http://localhost:8027/uploads/restaurants/1/tables/1/view/1703123456789-987654321.jpg"
+  }
+}
+```
 
 ---
 
-### 9.6. Upload Account Avatar
+### 11.7. Upload Account Avatar
 
-**Endpoint:** `POST /v1/dashboard/uploads/images/restaurant-accounts/avatar`
+**Endpoint:** `POST /api/v1/dashboard/uploads/images/restaurant-accounts/avatar`
 
 **Auth Required:** ✅ Owner/Staff
 
+**Request:**
+
+```http
+POST /api/v1/dashboard/uploads/images/restaurant-accounts/avatar
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+
+file: [binary image data]
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Upload ảnh thành công",
+  "data": {
+    "filename": "1703123456789-avatar.jpg",
+    "path": "/uploads/restaurant-accounts/1/avatar/1703123456789-avatar.jpg",
+    "url": "http://localhost:8027/uploads/restaurant-accounts/1/avatar/1703123456789-avatar.jpg"
+  }
+}
+```
+
 ---
 
-## 10. RESTAURANT IMAGES
+## 12. RESTAURANT IMAGES
 
-### 10.1. Create Restaurant Image
+### 12.1. Create Restaurant Image
 
-**Endpoint:** `POST /v1/dashboard/restaurant-images`
+**Endpoint:** `POST /api/v1/dashboard/restaurant-images`
 
 **Auth Required:** ✅ Owner only
+
+**Description:** tạo record image sau khi upload
 
 **Request Body:**
 
@@ -1469,6 +1641,24 @@ file: [binary image data]
 - `caption` - Optional
 - `is_primary` - Optional (cho type COVER)
 
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Tạo ảnh nhà hàng thành công",
+  "data": {
+    "id": 10,
+    "restaurant_id": 1,
+    "file_path": "/uploads/restaurants/1/cover/1703123456789-123456789.jpg",
+    "type": "COVER",
+    "caption": "Hình ảnh nhà hàng ban đêm",
+    "is_primary": true,
+    "created_at": "2025-12-20 14:00:00"
+  }
+}
+```
+
 **Side Effects:**
 
 - ✅ Nếu `type=COVER` và `is_primary=true` → Update `restaurants. main_image_url`
@@ -1476,23 +1666,117 @@ file: [binary image data]
 
 ---
 
-### 10.2. List Restaurant Images
+### 12.2. List Restaurant Images
 
-**Endpoint:** `GET /v1/dashboard/restaurant-images`
+**Endpoint:** `GET /api/v1/dashboard/restaurant-images`
 
 **Auth Required:** ✅ Owner/Staff
 
 **Query Parameters:**
 
-- `type` - COVER, GALLERY, MENU
+- `type` - Filter theo type (COVER, GALLERY, MENU)
+- `limit` - Số lượng records
+- `offset` - Offset for pagination
+
+**Request:**
+
+```http
+GET /api/v1/dashboard/restaurant-images?type=GALLERY&limit=10
+Authorization: Bearer <access_token>
+```
+
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "Lấy danh sách ảnh nhà hàng thành công",
+  "data": {
+    "items": [
+      {
+        "id": 11,
+        "restaurant_id": 1,
+        "file_path": "/uploads/restaurants/1/gallery/image1.jpg",
+        "type": "GALLERY",
+        "caption": "Không gian nhà hàng",
+        "is_primary": false,
+        "created_at": "2025-12-20 14:30:00"
+      },
+      {
+        "id": 12,
+        "restaurant_id": 1,
+        "file_path": "/uploads/restaurants/1/gallery/image2.jpg",
+        "type": "GALLERY",
+        "caption": null,
+        "is_primary": false,
+        "created_at": "2025-12-20 14:35:00"
+      }
+    ],
+    "pagination": {
+      "total": 8,
+      "limit": 10,
+      "offset": 0
+    }
+  }
+}
+```
 
 ---
 
-### 10.3. Delete Restaurant Image
+### 12.3. Get Image Detail
 
-**Endpoint:** `DELETE /v1/dashboard/restaurant-images/:id`
+**Endpoint:** `GET /api/v1/dashboard/restaurant-images/:id`
 
 **Auth Required:** ✅ Owner only
+
+**Request:**
+
+```http
+GET /api/v1/dashboard/restaurant-images/11
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Lấy chi tiết ảnh thành công",
+  "data": {
+    "id": 11,
+    "restaurant_id": 1,
+    "file_path": "/uploads/restaurants/1/gallery/image1.jpg",
+    "type": "GALLERY",
+    "caption": "Không gian nhà hàng",
+    "is_primary": false,
+    "created_at": "2025-12-20 14:30:00"
+  }
+}
+```
+
+---
+
+### 12.4. Delete Restaurant Image
+
+**Endpoint:** `DELETE /api/v1/dashboard/restaurant-images/:id`
+
+**Auth Required:** ✅ Owner only
+
+**Request**
+
+```http
+DELETE /api/v1/dashboard/restaurant-images/11
+Authorization: Bearer <owner_access_token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Xoá ảnh thành công"
+}
+```
 
 **Side Effects:**
 
@@ -1501,45 +1785,127 @@ file: [binary image data]
 
 ---
 
-## 11. NOTIFICATIONS (Dashboard)
+## 13. NOTIFICATIONS (Dashboard)
 
-### 11.1. List Notifications
+### 13.1. List Notifications
 
-**Endpoint:** `GET /v1/dashboard/notifications`
+**Endpoint:** `GET /api/v1/dashboard/notifications`
 
 **Auth Required:** ✅ Owner/Staff
 
 **Query Parameters:**
 
-- `is_read` - true/false
+- `read_status` - Filter theo trạng thái đọc (all/read/unread)
+- `type` - Kiểu thông báo
+- `from_time` - Khoảng thời gian đầu
+- `to_time` - cuối thời gian
+- `limit` - Số lượng records
+- `offset` - Offset for pagination
+
+**Request:**
+
+```http
+GET /api/v1/dashboard/notifications?read_status=read&from_time=2025-12-10&to_time=2025-12-20&limit=20&type=BOOKING_CREATED
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Lấy danh sách notification thành công",
+  "data": {
+    "items": [
+      {
+        "id": 500,
+        "restaurant_id": 1,
+        "user_id": null,
+        "type": "BOOKING_CREATED",
+        "title": "Có booking mới",
+        "message": "Khách Nguyễn Văn C vừa đặt bàn vào lúc 2025-12-20 15:00:00",
+        "target_type": "BOOKING",
+        "target_id": 101,
+        "is_read": false,
+        "created_at": "2025-12-20 15:00:00"
+      }
+    ],
+    "pagination": {
+      "total": 15,
+      "limit": 20,
+      "offset": 0
+    }
+  }
+}
+```
 
 ---
 
-### 11.2. Get Unread Count
+### 13.2. Get Unread Count (đếm có bao nhiêu thông báo chưa đọc)
 
-**Endpoint:** `GET /v1/dashboard/notifications/unread-count`
+**Endpoint:** `GET /api/v1/dashboard/notifications/unread-count`
+
+**Auth Required:** ✅ Owner/Staff
+
+**Request:**
+
+```http
+GET /api/v1/dashboard/notifications/unread-count
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Lấy số lượng notification chưa đọc thành công",
+  "data": {
+    "unreadCount": 5
+  }
+}
+```
+
+---
+
+### 13.3. Mark as Read
+
+**Endpoint:** `PATCH /api/v1/dashboard/notifications/:id/read`
+
+**Auth Required:** ✅ Owner/Staff
+
+**Request**
+
+```http
+PATCH /api/v1/dashboard/notifications/500/read
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Đánh dấu notification là đã đọc thành công",
+  "data": {
+    "id": 500,
+    "is_read": true,
+    "updated_at": "2025-12-20 16:00:00"
+  }
+}
+```
+
+---
+
+### 13.4. Mark All as Read
+
+**Endpoint:** `PATCH /api/v1/dashboard/notifications/read-all`
 
 **Auth Required:** ✅ Owner/Staff
 
 ---
 
-### 11.3. Mark as Read
-
-**Endpoint:** `PATCH /v1/dashboard/notifications/: id/read`
-
-**Auth Required:** ✅ Owner/Staff
-
----
-
-### 11.4. Mark All as Read
-
-**Endpoint:** `PATCH /v1/dashboard/notifications/read-all`
-
-**Auth Required:** ✅ Owner/Staff
-
----
-
-### 11.5. Delete Notification
+### 13.5. Delete Notification
 
 **Endpoint:** `DELETE /v1/dashboard/notifications/:id`
 
@@ -1547,7 +1913,7 @@ file: [binary image data]
 
 ---
 
-### 11.6. Delete All Read
+### 13.6. Delete All Read
 
 **Endpoint:** `DELETE /v1/dashboard/notifications/read-all`
 
@@ -1555,9 +1921,9 @@ file: [binary image data]
 
 ---
 
-## 12. ACCOUNT MANAGEMENT (Dashboard)
+## 14. ACCOUNT MANAGEMENT (Dashboard)
 
-### 12.1. Get My Profile
+### 14.1. Get My Profile
 
 **Endpoint:** `GET /v1/dashboard/accounts/me`
 
@@ -1565,7 +1931,7 @@ file: [binary image data]
 
 ---
 
-### 12.2. Update My Profile
+### 14.2. Update My Profile
 
 **Endpoint:** `PATCH /v1/dashboard/accounts/me/profile`
 
@@ -1586,7 +1952,7 @@ file: [binary image data]
 
 ---
 
-### 12.3. Change Password
+### 14.3. Change Password
 
 **Endpoint:** `POST /v1/dashboard/accounts/me/change-password`
 
@@ -1609,9 +1975,9 @@ file: [binary image data]
 
 ## PART 3: MINIAPP APIs
 
-## 13. RESTAURANT DISCOVERY
+## 15. RESTAURANT DISCOVERY
 
-### 13.1. Get Top Rated Restaurants
+### 15.1. Get Top Rated Restaurants
 
 **Endpoint:** `GET /v1/miniapp/restaurants/home/top-rated`
 
@@ -1641,7 +2007,7 @@ file: [binary image data]
 
 ---
 
-### 13.2. Get Top Favorite Restaurants
+### 15.2. Get Top Favorite Restaurants
 
 **Endpoint:** `GET /v1/miniapp/restaurants/home/top-favorites`
 
@@ -1649,7 +2015,7 @@ file: [binary image data]
 
 ---
 
-### 13.3. Get Top by Tag
+### 15.3. Get Top by Tag
 
 **Endpoint:** `GET /v1/miniapp/restaurants/home/top-by-tag? tag=lunch`
 
@@ -1657,7 +2023,7 @@ file: [binary image data]
 
 ---
 
-### 13.4. Search Restaurants
+### 15.4. Search Restaurants
 
 **Endpoint:** `GET /v1/miniapp/restaurants/search`
 
@@ -1673,7 +2039,7 @@ file: [binary image data]
 
 ---
 
-### 13.5. Get Restaurant Detail
+### 15.5. Get Restaurant Detail
 
 **Endpoint:** `GET /v1/miniapp/restaurants/: id`
 
@@ -1683,7 +2049,7 @@ file: [binary image data]
 
 ---
 
-### 13.6. Get Restaurant Reviews
+### 15.6. Get Restaurant Reviews
 
 **Endpoint:** `GET /v1/miniapp/restaurants/: id/reviews`
 
@@ -1695,9 +2061,9 @@ file: [binary image data]
 
 ---
 
-## 14. BOOKING FLOW
+## 16. BOOKING FLOW
 
-### 14.1. Get Available Tables
+### 16.1. Get Available Tables
 
 **Endpoint:** `GET /v1/miniapp/bookings/available-tables`
 
@@ -1718,7 +2084,7 @@ file: [binary image data]
 
 ---
 
-### 14.2. Create Booking
+### 16.2. Create Booking
 
 **Endpoint:** `POST /v1/miniapp/bookings`
 
@@ -1764,7 +2130,7 @@ file: [binary image data]
 
 ---
 
-### 14.3. List My Bookings
+### 16.3. List My Bookings
 
 **Endpoint:** `GET /v1/miniapp/bookings`
 
@@ -1776,7 +2142,7 @@ file: [binary image data]
 
 ---
 
-### 14.4. Get Booking Detail
+### 16.4. Get Booking Detail
 
 **Endpoint:** `GET /v1/miniapp/bookings/:id`
 
@@ -1784,7 +2150,7 @@ file: [binary image data]
 
 ---
 
-### 14.5. Update My Booking
+### 16.5. Update My Booking
 
 **Endpoint:** `PATCH /v1/miniapp/bookings/:id`
 
@@ -1808,7 +2174,7 @@ file: [binary image data]
 
 ---
 
-### 14.6. Cancel My Booking
+### 16.6. Cancel My Booking
 
 **Endpoint:** `PATCH /v1/miniapp/bookings/:id/cancel`
 
@@ -1821,9 +2187,9 @@ file: [binary image data]
 
 ---
 
-## 15. PAYMENT
+## 17. PAYMENT
 
-### 15.1. Pay Deposit
+### 17.1. Pay Deposit
 
 **Endpoint:** `POST /v1/miniapp/bookings/:id/pay-deposit`
 
@@ -1895,9 +2261,9 @@ async function handlePayment(bookingId) {
 
 ---
 
-## 16. REVIEWS
+## 18. REVIEWS
 
-### 16.1. Create Review
+### 18.1. Create Review
 
 **Endpoint:** `POST /v1/miniapp/reviews/bookings/:id/comment`
 
@@ -1921,7 +2287,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 16.2. List My Reviews
+### 18.2. List My Reviews
 
 **Endpoint:** `GET /v1/miniapp/reviews/my-reviews`
 
@@ -1929,7 +2295,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 16.3. Delete My Review
+### 18.3. Delete My Review
 
 **Endpoint:** `DELETE /v1/miniapp/reviews/:id`
 
@@ -1937,9 +2303,9 @@ async function handlePayment(bookingId) {
 
 ---
 
-## 17. FAVORITES
+## 19. FAVORITES
 
-### 17.1. List My Favorites
+### 19.1. List My Favorites
 
 **Endpoint:** `GET /v1/miniapp/favorites`
 
@@ -1947,7 +2313,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 17.2. Check Favorite Status
+### 19.2. Check Favorite Status
 
 **Endpoint:** `GET /v1/miniapp/favorites/restaurants/:id/status`
 
@@ -1955,7 +2321,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 17.3. Add to Favorites
+### 19.3. Add to Favorites
 
 **Endpoint:** `POST /v1/miniapp/favorites/restaurants/:id/add`
 
@@ -1967,7 +2333,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 17.4. Remove from Favorites
+### 19.4. Remove from Favorites
 
 **Endpoint:** `DELETE /v1/miniapp/favorites/restaurants/:id/remove`
 
@@ -1975,9 +2341,9 @@ async function handlePayment(bookingId) {
 
 ---
 
-## 18. USER PROFILE
+## 20. USER PROFILE
 
-### 18.1. Get My Profile
+### 20.1. Get My Profile
 
 **Endpoint:** `GET /v1/miniapp/users/me`
 
@@ -1985,7 +2351,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 18.2. Update My Profile
+### 20.2. Update My Profile
 
 **Endpoint:** `PATCH /v1/miniapp/users/me`
 
@@ -2004,7 +2370,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 18.3. Change Password
+### 20.3. Change Password
 
 **Endpoint:** `POST /v1/miniapp/users/me/change-password`
 
@@ -2025,7 +2391,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 18.4. Upload User Avatar
+### 20.4. Upload User Avatar
 
 **Endpoint:** `POST /v1/miniapp/uploads/images/users/avatar`
 
@@ -2035,9 +2401,9 @@ async function handlePayment(bookingId) {
 
 ---
 
-## 19. NOTIFICATIONS (MiniApp)
+## 21. NOTIFICATIONS (MiniApp)
 
-### 19.1. List My Notifications
+### 21.1. List My Notifications
 
 **Endpoint:** `GET /v1/miniapp/notifications`
 
@@ -2059,7 +2425,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 19.2. Get Unread Count
+### 21.2. Get Unread Count
 
 **Endpoint:** `GET /v1/miniapp/notifications/unread-count`
 
@@ -2067,7 +2433,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 19.3. Mark as Read
+### 21.3. Mark as Read
 
 **Endpoint:** `PATCH /v1/miniapp/notifications/:id/read`
 
@@ -2075,7 +2441,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 19.4. Mark All as Read
+### 21.4. Mark All as Read
 
 **Endpoint:** `PATCH /v1/miniapp/notifications/read-all`
 
@@ -2083,7 +2449,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 19.5. Delete Notification
+### 21.5. Delete Notification
 
 **Endpoint:** `DELETE /v1/miniapp/notifications/:id`
 
@@ -2091,7 +2457,7 @@ async function handlePayment(bookingId) {
 
 ---
 
-### 19.6. Delete All Read
+### 21.6. Delete All Read
 
 **Endpoint:** `DELETE /v1/miniapp/notifications/read-all`
 

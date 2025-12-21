@@ -121,7 +121,7 @@ router.post(
 
 /**
  * Upload table view image
- * POST /api/v1/dashboard/uploads/images/tables/view? table_id=123
+ * POST /api/v1/dashboard/uploads/images/tables/view?table_id=123
  * Field: file (single)
  * Query: table_id (required)
  */

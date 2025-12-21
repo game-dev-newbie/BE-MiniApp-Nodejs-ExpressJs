@@ -204,7 +204,7 @@ class BookingController {
 
     const booking = await bookingService.confirmBooking(accountId, bookingId);
 
-    const data = BookingResponse.fromModel(booking);
+    const data = BookingResponse.fromModel(booking, { includeRelations: true });
 
     return res.status(200).json({
       success: true,
@@ -223,7 +223,7 @@ class BookingController {
       bookingId
     );
 
-    const data = BookingResponse.fromModel(booking);
+    const data = BookingResponse.fromModel(booking, { includeRelations: true });
 
     return res.status(200).json({
       success: true,
@@ -239,7 +239,7 @@ class BookingController {
 
     const booking = await bookingService.completeBooking(accountId, bookingId);
 
-    const data = BookingResponse.fromModel(booking);
+    const data = BookingResponse.fromModel(booking, { includeRelations: true });
 
     return res.status(200).json({
       success: true,
@@ -255,7 +255,7 @@ class BookingController {
 
     const booking = await bookingService.markNoShow(accountId, bookingId);
 
-    const data = BookingResponse.fromModel(booking);
+    const data = BookingResponse.fromModel(booking, { includeRelations: true });
 
     return res.status(200).json({
       success: true,
