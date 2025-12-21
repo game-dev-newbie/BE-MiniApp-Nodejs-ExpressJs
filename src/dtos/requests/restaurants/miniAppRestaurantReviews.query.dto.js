@@ -1,9 +1,9 @@
 import Joi from "joi";
-import { paginationQuerySchema } from "../common/paginationQuery.schema.dto.js";
+import PaginationQuerySchema from "../common/paginationQuery.schema.dto.js";
 
 class MiniAppRestaurantReviewsQueryDto {
   static get schema() {
-    return paginationQuerySchema.keys({
+    return PaginationQuerySchema.keys({
       // "latest" | "rating_desc"
       sort: Joi.string().valid("latest", "rating_desc").optional(),
     });

@@ -16,7 +16,6 @@ export const getRestaurantById = async (restaurantId) => {
     include: [
       {
         model: RestaurantImage,
-        as: "RestaurantImages",
         required: false,
         attributes: ["id", "file_path", "type", "caption", "is_primary"],
       },
@@ -105,7 +104,6 @@ export const getTopRatedRestaurants = async (limit = 5) => {
     include: [
       {
         model: RestaurantImage,
-        as: "RestaurantImages",
         required: false,
         where: { type: RESTAURANT_IMAGE_TYPE.COVER },
         attributes: ["id", "file_path", "type", "caption", "is_primary"],
@@ -129,7 +127,6 @@ export const getTopFavoriteRestaurants = async (limit = 5) => {
     include: [
       {
         model: RestaurantImage,
-        as: "RestaurantImages",
         required: false,
         where: { type: RESTAURANT_IMAGE_TYPE.COVER },
         attributes: ["id", "file_path", "type", "caption", "is_primary"],
@@ -161,7 +158,6 @@ export const getTopRestaurantsByTag = async (tagKeyword, limit = 5) => {
     include: [
       {
         model: RestaurantImage,
-        as: "RestaurantImages",
         required: false,
         where: { type: "COVER" },
         attributes: ["id", "file_path", "type", "caption", "is_primary"],
@@ -202,8 +198,8 @@ export const getRestaurantReviewsForMiniApp = async (
   const { rows, count } = await Review.findAndCountAll({
     where,
     include: [
-      { model: User, as: "user" },
-      { model: Booking, as: "booking" },
+      { model: User },
+      { model: Booking },
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order,

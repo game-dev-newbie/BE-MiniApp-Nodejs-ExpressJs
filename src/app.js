@@ -17,6 +17,7 @@ const allowlist = new Set([
   "zbrowser://h5.zdn.vn", // một số môi trường Zalo có thể dùng scheme khác
   "http://localhost:3000",
   "http://localhost:5173",
+  "http://localhost:5174",
 ]);
 
 app.use(

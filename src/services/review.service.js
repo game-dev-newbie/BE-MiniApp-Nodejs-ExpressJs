@@ -103,9 +103,9 @@ export const createReviewFromBooking = async (userId, bookingId, payload) => {
   // Có thể include thêm quan hệ nếu cần cho response
   const fullReview = await Review.findByPk(review.id, {
     include: [
-      { model: Restaurant, as: "restaurant" },
-      { model: User, as: "user" },
-      { model: Booking, as: "booking" },
+      { model: Restaurant },
+      { model: User },
+      { model: Booking },
       { model: RestaurantAccount, as: "reply_account" },
     ],
   });
@@ -156,8 +156,8 @@ export const listMyReviews = async (userId, filters = {}) => {
   const { rows, count } = await Review.findAndCountAll({
     where,
     include: [
-      { model: Restaurant, as: "restaurant" },
-      { model: Booking, as: "booking" },
+      { model: Restaurant },
+      { model: Booking },
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order: [["created_at", "DESC"]],
@@ -233,8 +233,8 @@ export const listRestaurantReviewsForMiniApp = async (
   const { rows, count } = await Review.findAndCountAll({
     where,
     include: [
-      { model: User, as: "user" },
-      { model: Booking, as: "booking" },
+      { model: User },
+      { model: Booking },
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order,
@@ -304,8 +304,8 @@ export const listRestaurantReviewsForDashboard = async (
   const { rows, count } = await Review.findAndCountAll({
     where,
     include: [
-      { model: User, as: "user" },
-      { model: Booking, as: "booking" },
+      { model: User },
+      { model: Booking },
       { model: RestaurantAccount, as: "reply_account" },
     ],
     order: [["created_at", "DESC"]],
@@ -351,9 +351,9 @@ export const replyReview = async (accountId, reviewId, payload) => {
 
   const fullReview = await Review.findByPk(review.id, {
     include: [
-      { model: Restaurant, as: "restaurant" },
-      { model: User, as: "user" },
-      { model: Booking, as: "booking" },
+      { model: Restaurant },
+      { model: User },
+      { model: Booking },
       { model: RestaurantAccount, as: "reply_account" },
     ],
   });

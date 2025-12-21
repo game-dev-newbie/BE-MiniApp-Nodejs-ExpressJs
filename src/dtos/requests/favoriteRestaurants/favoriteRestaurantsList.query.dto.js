@@ -1,10 +1,10 @@
 import Joi from "joi";
-import { paginationQuerySchema } from "../common/paginationQuery.schema.dto.js";
+import PaginationQuerySchema from "../common/paginationQuery.schema.dto.js";
 
 class FavoriteRestaurantsListQueryDto {
   static get schema() {
     // Chỉ dùng pagination, không có filter riêng
-    return paginationQuerySchema;
+    return PaginationQuerySchema;
   }
 }
 

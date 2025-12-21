@@ -300,6 +300,175 @@ Authorization: Bearer <access_token>
 
 ---
 
+### 2.4. Forgot Password
+
+**Endpoint:** `POST /api/v1/dashboard/auth/forgot-password`
+
+**Auth Required:** ❌ No
+
+**Description:** Yêu cầu reset mật khẩu
+
+**Request Body:**
+
+```json
+{
+  "email": "owner@example.com"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Mã xác thực đã được gửi đến email của bạn.  Vui lòng kiểm tra email.",
+  "data": {
+    "email": "customer@example.com"
+  }
+}
+```
+
+**Error case**
+
+```json
+// 404 - Email không tồn tại
+{
+  "success":  false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Email không tồn tại trong hệ thống"
+  }
+}
+
+// 400 - Tài khoản Zalo không có password
+{
+  "success": false,
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "Tài khoản đăng nhập bằng Zalo không hỗ trợ đổi mật khẩu"
+  }
+}
+```
+
+### 2.5. Reset password
+
+**Endpoint:** `POST /api/v1/dashboard/auth/reset-password`
+
+**Auth Required:** ❌ No
+
+**Description:** Đặt lại mật khẩu mới bằng reset token
+
+**Request Body:**
+
+```json
+{
+  "email": "customer@example.com",
+  "reset_token": "123456",
+  "new_password": "NewPassword456!"
+  "confirm_new_password: "NewPassword456!"
+}
+```
+
+**Field definitions**
+`email` - Required: Email đã dùng để forgot password
+`reset_token` - Required: Mã 6 số từ email
+`new_password`- Required: Mật khẩu mới (min 8 ký tự)
+
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "Đặt lại mật khẩu thành công.  Vui lòng đăng nhập lại.",
+  "data": {
+    "email": "customer@example.com"
+  }
+}
+```
+
+**Side Effects:**
+
+- ✅ Cập nhật mật khẩu mới
+- ✅ TẤT CẢ refresh tokens bị thu hồi → Phải login lại
+- ✅ Reset token bị xóa sau khi sử dụng
+- ✅ Gửi email thông báo mật khẩu đã được thay đổi
+
+**Error case**
+
+```json
+// 400 - Token không hợp lệ
+{
+  "success": false,
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "Mã xác thực không hợp lệ hoặc đã hết hạn"
+  }
+}
+
+// 400 - Token đã được sử dụng
+{
+  "success": false,
+  "error": {
+    "code":  "BAD_REQUEST",
+    "message": "Mã xác thực đã được sử dụng"
+  }
+}
+
+// 400 - Email không khớp
+{
+  "success": false,
+  "error":  {
+    "code": "BAD_REQUEST",
+    "message": "Email không khớp với mã xác thực"
+  }
+}
+```
+
+**Security Notes:**
+
+- ✅ Token chỉ dùng được 1 lần
+- ✅ Token hết hạn sau 15 phút
+- ✅ Mỗi email chỉ có 1 token active
+- ✅ Rate limit: 5 requests/10 phút/IP
+
+** Front-end flow**
+
+```json
+// Step 1: Forgot Password
+async function handleForgotPassword(email) {
+  const response = await fetch('/api/v1/miniapp/auth/forgot-password', {
+    method:  'POST',
+    headers:  { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  if (response.ok) {
+    showMessage('Mã xác thực đã được gửi đến email của bạn');
+    navigateToResetPasswordScreen(email);
+  }
+}
+
+// Step 2: Reset Password
+async function handleResetPassword(email, resetToken, newPassword) {
+  const response = await fetch('/api/v1/miniapp/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:  JSON.stringify({
+      email,
+      reset_token: resetToken,
+      new_password: newPassword,
+    }),
+  });
+
+  if (response.ok) {
+    showMessage('Đặt lại mật khẩu thành công!  Vui lòng đăng nhập lại.');
+    navigateToLogin();
+  }
+}
+```
+
+---
+
 ## 3. MINIAPP AUTHENTICATION
 
 ### 3.1. Login with Zalo

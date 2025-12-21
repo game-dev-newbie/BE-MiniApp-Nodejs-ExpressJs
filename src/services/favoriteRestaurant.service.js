@@ -117,7 +117,6 @@ export const listMyFavoriteRestaurants = async (
     include: [
       {
         model: Restaurant,
-        as: "restaurant",
         required: true,
         where: {
           is_active: true,

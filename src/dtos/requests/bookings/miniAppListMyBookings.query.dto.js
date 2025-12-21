@@ -1,9 +1,9 @@
 import Joi from "joi";
-import { paginationQuerySchema } from "../common/paginationQuery.schema.dto.js";
+import PaginationQuerySchema from "../common/paginationQuery.schema.dto.js";
 
 class MiniAppListMyBookingsQueryDto {
   static get schema() {
-    return paginationQuerySchema.keys({
+    return PaginationQuerySchema.keys({
       // upcoming | history | cancelled
       category: Joi.string()
         .valid("upcoming", "history", "cancelled")

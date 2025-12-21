@@ -5,7 +5,7 @@ import reviewController from "../../../../controllers/review.controller.js";
 import validate from "../../../../middlewares/validate.js";
 import {
   DashboardReplyReviewDto,
-  DashboardListNotificationsQueryDto,
+  DashboardListRestaurantReviewsQueryDto,
 } from "../../../../dtos/index.js";
 import { requireDashboardRoles } from "../../../../middlewares/jwtAuthorization.js";
 import { AUTH_ROLES } from "../../../../constants/auth.js";
@@ -16,7 +16,7 @@ const router = Router();
 router.get(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER, AUTH_ROLES.STAFF),
-  validate(DashboardListNotificationsQueryDto, "query"),
+  validate(DashboardListRestaurantReviewsQueryDto, "query"),
   reviewController.getRestaurantReviewsForDashboard
 );
 

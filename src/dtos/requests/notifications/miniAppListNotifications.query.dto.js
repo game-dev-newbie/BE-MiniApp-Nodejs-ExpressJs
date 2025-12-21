@@ -1,10 +1,10 @@
 import Joi from "joi";
-import { paginationQuerySchema } from "../common/paginationQuery.schema.dto.js";
+import PaginationQuerySchema from "../common/paginationQuery.schema.dto.js";
 import { NOTIFICATION_TYPE_LIST } from "../../../constants/index.js";
 
 class MiniAppListNotificationsQueryDto {
   static get schema() {
-    return paginationQuerySchema.keys({
+    return PaginationQuerySchema.keys({
       // "all" | "read" | "unread"
       read_status: Joi.string().valid("all", "read", "unread").optional(),
 

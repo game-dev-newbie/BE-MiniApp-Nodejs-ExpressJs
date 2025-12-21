@@ -5,7 +5,7 @@ import { requireDashboardRoles } from "../../../../middlewares/jwtAuthorization.
 import { AUTH_ROLES } from "../../../../constants/index.js";
 import staffController from "../../../../controllers/staff.controller.js";
 import validate from "../../../../middlewares/validate.js";
-import { paginationQuerySchema } from "../../../../dtos/requests/common/paginationQuery.schema.dto.js";
+import PaginationQuerySchema  from "../../../../dtos/requests/common/paginationQuery.schema.dto.js";
 
 const router = Router();
 
@@ -15,7 +15,7 @@ const router = Router();
 router.get(
   "/",
   ...requireDashboardRoles(AUTH_ROLES.OWNER),
-  validate(paginationQuerySchema, "query"),
+  validate(PaginationQuerySchema, "query"),
   staffController.listStaff
 );
 

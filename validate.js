@@ -7,11 +7,11 @@ const validate =
     // FIX: Support both Class (DtoClass.schema) and direct Joi Object (schema)
     // Ưu tiên kiểm tra hàm validate() để xác định đâu là Joi Schema thực sự
     let schema;
-
-    if (typeof DtoClassOrSchema?.validate === "function") {
-      schema = DtoClassOrSchema;
-    } else if (typeof DtoClassOrSchema?.schema?.validate === "function") {
-      schema = DtoClassOrSchema.schema;
+    
+    if (typeof DtoClassOrSchema?.validate === 'function') {
+        schema = DtoClassOrSchema;
+    } else if (typeof DtoClassOrSchema?.schema?.validate === 'function') {
+        schema = DtoClassOrSchema.schema;
     }
 
     // Phòng khi quên không khai báo schema cho DTO

@@ -1,10 +1,10 @@
 import Joi from "joi";
-import { paginationQuerySchema } from "../common/paginationQuery.schema.dto.js";
+import PaginationQuerySchema  from "../common/paginationQuery.schema.dto.js";
 import { BOOKING_STATUS } from "../../../constants/index.js";
 
 class DashboardListBookingsQueryDto {
   static get schema() {
-    return paginationQuerySchema.keys({
+    return PaginationQuerySchema.keys({
       status: Joi.string()
         .valid(...Object.values(BOOKING_STATUS))
         .optional(),
