@@ -19,6 +19,7 @@ class MiniAppChangePasswordDto {
         .messages({
           "any.invalid": "Mật khẩu mới không được trùng mật khẩu hiện tại",
         }),
+        
     }).unknown(false);
   }
 }

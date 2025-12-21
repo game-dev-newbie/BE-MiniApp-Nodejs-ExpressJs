@@ -3,6 +3,7 @@ import { Router } from "express";
 import restaurantController from "../../../../controllers/restaurant.controller.js";
 import { requireCustomer } from "../../../../middlewares/jwtAuthorization.js";
 import { MiniAppSearchRestaurantsQueryDto } from "../../../../dtos/index.js";
+import {paginationQuerySchema} from "../../../../dtos/requests/common/paginationQuery.schema.dto.js";
 import validate from "../../../../middlewares/validate.js";
 
 const router = Router();
@@ -23,7 +24,7 @@ router.get("/:id", restaurantController.getMiniappDetail);
 router.get(
   "/:id/reviews",
   ...requireCustomer(),
-  validate(MiniAppSearchRestaurantsQueryDto, "query"),
+  validate(paginationQuerySchema, "query"),
   restaurantController.getRestaurantReviewsForMiniApp
 );
 
