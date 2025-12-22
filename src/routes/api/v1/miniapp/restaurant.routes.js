@@ -3,7 +3,7 @@ import { Router } from "express";
 import restaurantController from "../../../../controllers/restaurant.controller.js";
 import { requireCustomer } from "../../../../middlewares/jwtAuthorization.js";
 import { MiniAppSearchRestaurantsQueryDto } from "../../../../dtos/index.js";
-import {paginationQuerySchema} from "../../../../dtos/requests/common/paginationQuery.schema.dto.js";
+import PaginationQuerySchema from "../../../../dtos/requests/common/paginationQuery.schema.dto.js";
 import validate from "../../../../middlewares/validate.js";
 
 const router = Router();
@@ -17,6 +17,13 @@ router.get("/home/top-favorites", restaurantController.getMiniappTopFavorite);
 // Home – top theo tag/time-slot (?tag=morning / lunch / dinner / ...)
 router.get("/home/top-by-tag", restaurantController.getMiniappTopByTag);
 
+// Search realtime
+router.get(
+  "/search",
+  validate(MiniAppSearchRestaurantsQueryDto, "query"),
+  restaurantController.searchMiniApp
+);
+
 // Detail nhà hàng
 router.get("/:id", restaurantController.getMiniappDetail);
 
@@ -24,15 +31,10 @@ router.get("/:id", restaurantController.getMiniappDetail);
 router.get(
   "/:id/reviews",
   ...requireCustomer(),
-  validate(paginationQuerySchema, "query"),
+  validate(PaginationQuerySchema, "query"),
   restaurantController.getRestaurantReviewsForMiniApp
 );
 
-// Search realtime
-router.get(
-  "/search",
-  validate(MiniAppSearchRestaurantsQueryDto, "query"),
-  restaurantController.searchMiniApp
-);
+
 
 export default router;

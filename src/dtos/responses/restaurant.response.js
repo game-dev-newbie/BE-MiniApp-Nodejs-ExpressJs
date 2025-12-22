@@ -108,6 +108,8 @@ class RestaurantResponse {
       require_deposit,
       default_deposit_amount,
       is_active,
+      open_time,
+      close_time
     } = plain;
 
     return {
@@ -120,6 +122,8 @@ class RestaurantResponse {
       require_deposit,
       default_deposit_amount,
       is_active,
+      open_time,
+      close_time,
       main_image_url: mainImageUrl,
     };
   }
@@ -135,8 +139,8 @@ class RestaurantResponse {
 
     const card = this.toMiniappCard(plain); // reuse logic main_image_url
 
-    const images = Array.isArray(plain.images)
-      ? plain.images.map((img) => ({
+    const images = Array.isArray(plain.RestaurantImages)
+      ? plain.RestaurantImages.map((img) => ({
           id: img.id,
           file_path: img.file_path,
           type: img.type, // 'COVER' | 'GALLERY' | 'MENU' ... tuỳ bạn định nghĩa

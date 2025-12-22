@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import { AppError } from "../utils/appError.js";
 import { TABLE_STATUS } from "../constants/index.js";
+import { normalizeWebPath } from "../utils/uploadPath.util.js";
 import {
   safeUnlinkByWebPath,
   isSameWebPath,

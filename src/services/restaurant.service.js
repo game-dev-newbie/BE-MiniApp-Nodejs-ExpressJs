@@ -6,7 +6,7 @@ import { AppError } from "../utils/appError.js";
 import { REVIEW_STATUS, RESTAURANT_IMAGE_TYPE } from "../constants/index.js";
 import { buildRestaurantSearchFields } from "../utils/search.util.js";
 
-const { Restaurant, RestaurantAccount, RestaurantImage, User, Booking } =
+const { Restaurant, RestaurantAccount, RestaurantImage, User, Booking, Review } =
   models;
 
 // -------- COMMON --------
@@ -16,7 +16,7 @@ export const getRestaurantById = async (restaurantId) => {
     include: [
       {
         model: RestaurantImage,
-        required: false,
+        //required: false,
         attributes: ["id", "file_path", "type", "caption", "is_primary"],
       },
     ],

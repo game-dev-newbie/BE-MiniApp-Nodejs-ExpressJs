@@ -38,7 +38,7 @@ class BookingController {
       people_count: peopleCount,
     });
 
-    const items = RestaurantTableResponse.fromList(tables);
+    const items = RestaurantTableResponse.fromList(tables.availableTables);
 
     return res.status(200).json({
       success: true,

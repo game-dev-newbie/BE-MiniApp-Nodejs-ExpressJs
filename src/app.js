@@ -6,11 +6,21 @@ import { notFound } from "./middlewares/notFound.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { fileURLToPath } from "url";
 import cors from "cors";
-import helmet from "helmet";
+import helmet, { crossOriginResourcePolicy } from "helmet";
 
 const app = express();
 
-app.use(helmet());
+// Thêm vào server.js
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+// // Hoặc
+// app.use((req, res, next) => {
+//   res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+//   res.set('Access-Control-Allow-Origin', '*');
+//   res.set('ngrok-skip-browser-warning', '69420');
+//   next();
+// });
 const allowlist = new Set([
   "https://dine-link-dashboard.vercel.app",
   "https://h5.zdn.vn", // thường gặp với Zalo MiniApp webview

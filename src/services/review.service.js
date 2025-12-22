@@ -11,6 +11,7 @@ import {
   notifyReviewCreated,
   notifyReviewReplied,
 } from "../utils/notificationHelper.util.js";
+import { UserResponse } from "../dtos/index.js";
 
 const { Review, Booking, RestaurantAccount, Restaurant, User } = models;
 
@@ -106,10 +107,11 @@ export const createReviewFromBooking = async (userId, bookingId, payload) => {
       { model: Restaurant },
       { model: User },
       { model: Booking },
-      { model: RestaurantAccount, as: "reply_account" },
+      { model: RestaurantAccount, as: "reply_account" }
     ],
   });
 
+  
   // Thông báo cho nhà hàng về review mới
   await _safeNotify(() =>
     notifyReviewCreated(fullReview, fullReview.user, fullReview.restaurant)

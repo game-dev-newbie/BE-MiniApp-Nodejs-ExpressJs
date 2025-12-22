@@ -37,12 +37,7 @@ router.patch(
   notificationController.markAllMyNotificationsAsRead
 );
 
-// Xoá 1 notification
-router.delete(
-  "/:id",
-  ...requireCustomer(),
-  notificationController.deleteMyNotification
-);
+
 
 // Xoá tất cả notification đã đọc
 router.delete(

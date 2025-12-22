@@ -1,6 +1,6 @@
 // src/dtos/responses/review.response.js
 
-import { UserResponse, RestaurantResponse, BookingResponse } from "../index.js";
+import { UserResponse, RestaurantResponse, BookingMiniAppResponse } from "../index.js";
 
 import time from "../../utils/time.js";
 
@@ -11,63 +11,84 @@ class ReviewResponse {
    * @param {object} options
    * @param {boolean} options.includeRelations
    */
-  static fromModel(reviewInstance, options = {}) {
-    if (!reviewInstance) return null;
+// src/dtos/responses/review.response.js
 
-    const { includeRelations = true } = options;
+static fromModel(reviewInstance, options = {}) {
+  if (!reviewInstance) return null;
 
-    const plain =
-      typeof reviewInstance.get === "function"
-        ? reviewInstance.get({ plain: true })
-        : reviewInstance;
+  const { includeRelations = true } = options;
 
-    const {
-      id,
-      booking_id,
-      restaurant_id,
-      user_id,
-      rating,
-      comment,
-      status,
-      created_at,
-      updated_at,
-      // possible relations:
-      booking,
-      restaurant,
-      user,
-      ...rest
-    } = plain;
+  const plain =
+    typeof reviewInstance.get === "function"
+      ? reviewInstance.get({ plain: true })
+      : reviewInstance;
 
-    const result = {
-      id,
-      booking_id,
-      restaurant_id,
-      user_id,
-      rating,
-      comment,
-      status,
-      created_at: time.toVNDateTime(created_at),
-      updated_at: time.toVNDateTime(updated_at),
-      ...rest,
-    };
+  // Bắt cả alias dạng User và user
+  const {
+    id,
+    booking_id,
+    restaurant_id,
+    user_id,
+    rating,
+    comment,
+    status,
+    reply_comment,
+    reply_account_id,
+    reply_created_at,
+    reply_updated_at,
+    created_at,
+    updated_at,
 
-    if (includeRelations) {
-      if (restaurant) {
-        result.restaurant = RestaurantResponse.fromModel(restaurant);
-      }
-      if (user) {
-        result.user = UserResponse.fromModel(user);
-      }
-      if (booking) {
-        // để tránh vòng lặp deep, ta disable includeRelations trong Booking
-        result.booking = BookingResponse.fromModel(booking, {
-          includeRelations: false,
-        });
-      }
-    }
+    // relations có thể là nhiều kiểu key:
+    User,
+    Restaurant,
+    Booking,
 
-    return result;
+
+    ...rest
+  } = plain;
+
+  // ❗️Nếu bạn vẫn muốn giữ rest, hãy xóa sạch những key nguy hiểm trước khi spread
+  delete rest.User;
+  delete rest.user;
+  delete rest.Restaurant;
+  delete rest.restaurant;
+  delete rest.Booking;
+  delete rest.booking;
+
+  const result = {
+    id,
+    booking_id,
+    restaurant_id,
+    user_id,
+    rating,
+    comment,
+    status,
+    reply_comment,
+    reply_account_id,
+    reply_created_at: time.toVNDateTime(reply_created_at),
+    reply_updated_at: time.toVNDateTime(reply_updated_at),
+    created_at: time.toVNDateTime(created_at),
+    updated_at: time.toVNDateTime(updated_at),
+
+    // Nếu không thực sự cần rest thì bỏ luôn dòng này là đẹp nhất:
+    // ...rest,
+  };
+
+  if (includeRelations) {
+    const u = User ;
+    if (u) result.User = UserResponse.fromModel(u);
+
+    const r = Restaurant ;
+    if (r) result.Restaurant = RestaurantResponse.toDashboard(r);
+
+    const b = Booking;
+    if (b) result.Booking = BookingMiniAppResponse.fromModel(b, { includeRelations: false });
   }
+
+  return result;
+}
+
 
   static fromList(reviewInstances, options = {}) {
     if (!Array.isArray(reviewInstances)) return [];

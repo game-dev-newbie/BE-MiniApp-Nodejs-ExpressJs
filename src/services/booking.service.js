@@ -26,7 +26,7 @@ import {
   notifyBookingUpdatedToDashboard,
 } from "../utils/notificationHelper.util.js";
 
-const { Booking, Restaurant, RestaurantTable, User, RestaurantAccount } =
+const { Booking, Restaurant, RestaurantTable, User, RestaurantAccount, Review } =
   models;
 
 /**
@@ -307,6 +307,11 @@ export const listBookingsForUser = async (userId, filters = {}) => {
   const { rows, count } = await Booking.findAndCountAll({
     where,
     order: [["booking_time", "DESC"]],
+    include: [
+      { model: Restaurant },
+      { model: RestaurantTable },
+      { model: Review },
+    ],
     limit,
     offset,
   });
@@ -315,7 +320,12 @@ export const listBookingsForUser = async (userId, filters = {}) => {
 };
 
 export const getBookingDetailForUser = async (userId, bookingId) => {
-  const booking = await Booking.findByPk(bookingId);
+  const booking = await Booking.findByPk(bookingId, {
+    include: [
+      { model: Restaurant },
+      { model: RestaurantTable },
+    ],
+  });
 
   if (!booking || booking.user_id !== userId) {
     throw new AppError("Booking không tồn tại", 404);

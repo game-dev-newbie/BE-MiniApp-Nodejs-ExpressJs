@@ -1,6 +1,7 @@
 // src/dtos/responses/bookingMiniapp.response.js
 
 import time from "../../utils/time.js";
+import { RestaurantResponse, RestaurantTableResponse, ReviewResponse } from "../index.js";
 
 const BOOKING_STATUS_LABELS = {
   PENDING: "Chờ xác nhận",
@@ -25,9 +26,10 @@ class BookingMiniAppResponse {
    * - Định dạng booking_time cho dễ hiển thị
    * - Giữ những field user cần xem trong app
    */
-  static fromModel(bookingInstance) {
+  static fromModel(bookingInstance, options = {}) {
     if (!bookingInstance) return null;
 
+    const { includeRelations = true } = options;
     const plain =
       typeof bookingInstance.get === "function"
         ? bookingInstance.get({ plain: true })
@@ -53,10 +55,23 @@ class BookingMiniAppResponse {
       created_at,
       updated_at,
       // nếu Booking đã include thêm table/restaurant thì vẫn giữ trong rest
+
+      RestaurantTable,
+      Restaurant,
+      Review,
+
       ...rest
     } = plain;
 
-    return {
+    // ❗️Nếu bạn vẫn muốn giữ rest, hãy xóa sạch những key nguy hiểm trước khi spread
+    delete rest.RestaurantTable;
+    delete rest.restaurantTable;
+    delete rest.Restaurant;
+    delete rest.restaurant;
+    delete rest.Review;
+    delete rest.review;
+
+    const result = {
       id,
       restaurant_id,
       table_id,
@@ -89,6 +104,18 @@ class BookingMiniAppResponse {
       // thì miniapp vẫn lấy được ở rest (vd: rest.table.name, rest.restaurant.name)
       ...rest,
     };
+
+     if (includeRelations) {
+    const u = RestaurantTable ;
+    if (u) result.RestaurantTable = RestaurantTableResponse.fromModel(u);
+
+    const r = Restaurant ;
+    if (r) result.Restaurant = RestaurantResponse.toDashboard(r);
+
+    const b = Review ;
+    if (b) result.Review = ReviewResponse.fromModel(b, { includeRelations: false });
+  }
+    return result;
   }
 
   static fromList(list) {

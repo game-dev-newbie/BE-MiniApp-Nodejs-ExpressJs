@@ -52,7 +52,7 @@ export const createImageForRestaurant = async (restaurantId, payload) => {
     );
   }
 
-  await sequelize.transaction(async (t) => {
+  const finalImage = await sequelize.transaction(async (t) => {
     const image = await RestaurantImage.create(
       {
         restaurant_id: restaurantId,
@@ -88,8 +88,9 @@ export const createImageForRestaurant = async (restaurantId, payload) => {
         await restaurant.save({ transaction: t });
       }
     }
+    return image;
   });
-  return image;
+  return finalImage;
 };
 
 /**

@@ -49,7 +49,7 @@ class RestaurantImageController {
       }
     );
 
-    const items = RestaurantImageResponse.fromList(result.rows);
+    const items = RestaurantImageResponse.fromList(result.items);
     return res.status(200).json({
       success: true,
       message: "Lấy danh sách ảnh nhà hàng thành công",
