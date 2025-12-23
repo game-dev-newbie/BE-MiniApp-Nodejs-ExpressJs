@@ -156,6 +156,20 @@ export const getUserNotifications = async (
   };
 };
 
+// Đánh dấu 1 notification là đã đọc
+export const markUserNotificationAsRead = async (userId, notificationId) => {
+  const notification = await Notification.findByPk(notificationId);
+  if (!notification || notification.user_id !== userId) {
+    throw new AppError("Không tìm thấy thông báo", 404);
+  }
+  if (!notification.is_read) {
+    notification.is_read = true;
+    notification.read_at = new Date();
+    await notification.save();
+  }
+  return notification;
+};
+
 // Đánh dấu tất cả notification là đã đọc
 export const markAllUserNotificationsAsRead = async (userId) => {
   if (!userId) {

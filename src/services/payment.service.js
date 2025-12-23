@@ -10,6 +10,7 @@ import {
 } from "../constants/index.js";
 import * as notificationService from "./notification.service.js";
 import * as emailService from "./email.service.js"; // ✅ NEW
+import { _safeNotify, notifyBookingPaymentFailed, notifyBookingPaymentSuccess } from "../utils/notificationHelper.util.js";
 
 const { Booking, User, Restaurant } = models;
 
@@ -104,13 +105,9 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
     await booking.save();
 
     // Thông báo
-    await notificationService.createNotification({
-      userId,
-      type: NOTIFICATION_TYPE.BOOKING_PAYMENT_FAILED,
-      title: "Thanh toán cọc thất bại",
-      message:
-        "Thanh toán đặt cọc cho booking của bạn không thành công, vui lòng thử lại.",
-    });
+    await _safeNotify(
+      notifyBookingPaymentFailed(booking, booking.deposit_amount, restaurant)
+    );
 
     // ✅ NEW: Gửi email thanh toán thất bại
     try {
@@ -133,20 +130,15 @@ export const payDepositForBooking = async (userId, bookingId, payload) => {
     await booking.save();
 
     // Thông báo cho khách
-    await notificationService.createNotification({
-      userId,
-      type: NOTIFICATION_TYPE.BOOKING_PAYMENT_SUCCESS,
-      title: "Thanh toán cọc thành công",
-      message: "Bạn đã thanh toán cọc cho booking thành công.",
-    });
+    await _safeNotify(
+      notifyBookingPaymentSuccess(booking, restaurant, booking.deposit_amount)
+    );
 
     // Thông báo cho nhà hàng
-    await notificationService.createNotification({
-      restaurantId: booking.restaurant_id,
-      type: NOTIFICATION_TYPE.BOOKING_PAYMENT_SUCCESS,
-      title: "Booking đã thanh toán cọc",
-      message: "Một booking đã được khách thanh toán cọc.",
-    });
+    await _safeNotify(
+      notifyBookingPaymentSuccess(booking, restaurant, booking.deposit_amount)
+       
+    );
 
     // ✅ NEW: Gửi email xác nhận thanh toán thành công
     try {

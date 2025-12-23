@@ -114,7 +114,7 @@ export const createReviewFromBooking = async (userId, bookingId, payload) => {
   
   // Thông báo cho nhà hàng về review mới
   await _safeNotify(() =>
-    notifyReviewCreated(fullReview, fullReview.user, fullReview.restaurant)
+    notifyReviewCreated(fullReview, fullReview.User, fullReview.Restaurant)
   );
 
   return fullReview;
@@ -362,7 +362,7 @@ export const replyReview = async (accountId, reviewId, payload) => {
 
   // Thông báo cho user về việc review đã được reply
   await _safeNotify(() =>
-    notifyReviewReplied(fullReview, fullReview.restaurant)
+    notifyReviewReplied(fullReview, fullReview.Restaurant)
   );
 
   return fullReview;

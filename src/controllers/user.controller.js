@@ -1,4 +1,5 @@
 // src/controllers/user.controller.js
+import { UserResponse } from "../dtos/index.js";
 import * as userService from "../services/user.service.js";
 import { catchAsync } from "../utils/catchAsync.js"; // nếu bạn đang dùng catchAsync wrapper
 
@@ -9,10 +10,12 @@ class UserController {
 
     const user = await userService.getMyMiniAppProfile(userId);
 
+    const data = await UserResponse.fromModel(user);
+
     return res.status(200).json({
       success: true,
       message: "Lấy thông tin tài khoản thành công",
-      data: user,
+      data,
     });
   });
 
@@ -28,10 +31,12 @@ class UserController {
 
     const user = await userService.updateMyMiniAppProfile(userId, payload); // :contentReference[oaicite:2]{index=2}
 
+const data = await UserResponse.fromModel(user);
+
     return res.status(200).json({
       success: true,
       message: "Cập nhật thông tin tài khoản thành công",
-      data: user,
+      data,
     });
   });
 

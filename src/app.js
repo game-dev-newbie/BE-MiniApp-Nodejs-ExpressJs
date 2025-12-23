@@ -10,47 +10,61 @@ import helmet, { crossOriginResourcePolicy } from "helmet";
 
 const app = express();
 
-// Thêm vào server.js
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-// // Hoặc
-// app.use((req, res, next) => {
-//   res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-//   res.set('Access-Control-Allow-Origin', '*');
-//   res.set('ngrok-skip-browser-warning', '69420');
-//   next();
-// });
+// 1) Helmet: tắt COEP để khỏi dính ERR_BLOCKED_BY_RESPONSE trên vài webview
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    //crossOriginResourcePolicy: fileURLToPath === "true" ? false : { policy: "cross-origin" },
+  })
+);
+
+// 2) Cho /uploads public, CORS open
+app.use(
+  "/uploads",
+  cors({ origin: "*", methods: ["GET", "OPTIONS"] })
+);
+
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    // Cho phép nơi khác (Zalo WebView) nhúng ảnh
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    next();
+  },
+  //express.static(path.resolve(process.cwd(), "public", "uploads"))
+);
+
+// 3) CORS strict chỉ cho API
 const allowlist = new Set([
   "https://dine-link-dashboard.vercel.app",
-  "https://h5.zdn.vn", // thường gặp với Zalo MiniApp webview
-  "zbrowser://h5.zdn.vn", // một số môi trường Zalo có thể dùng scheme khác
-  "http://localhost:3000",
+  "https://h5.zdn.vn",
   "http://localhost:5173",
+  "http://localhost:3000",
   "http://localhost:5174",
+  // thêm origin thực tế bạn log được ở Zalo DevTools nếu khác
 ]);
 
 app.use(
+  "/api",
   cors({
     origin: (origin, cb) => {
-      // Postman/server-to-server thường không có Origin
       if (!origin) return cb(null, true);
-
-      // allow exact match
       if (allowlist.has(origin)) return cb(null, true);
-
-      // allow preview vercel (tuỳ bạn có cần không)
       if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return cb(null, true);
 
-      // một số môi trường Zalo có thể dùng scheme khác (nếu bạn log thấy)
-      if (origin === "zbrowser://h5.zdn.vn") return cb(null, true);
-
+      // quan trọng: log để biết origin thật khi chạy trên Zalo
+      console.log("CORS blocked origin:", origin);
       return cb(new Error("CORS blocked: " + origin), false);
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
   })
 );
+
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

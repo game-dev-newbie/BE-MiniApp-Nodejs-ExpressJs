@@ -50,11 +50,11 @@ const buildDayRange = (fromDate, toDate) => {
   let end = null;
 
   if (fromDate) {
-    start = dayjs.tz(`${fromDate} 00:00:00`, "YYYY-MM-DD HH:mm:ss").toDate();
+    start = dayjs.tz(`${fromDate} 00:00:00`, "YYYY-MM-DD HH:mm:ss", "Asia/Ho_Chi_Minh").toDate();
   }
 
   if (toDate) {
-    end = dayjs.tz(`${toDate} 23:59:59`, "YYYY-MM-DD HH:mm:ss").toDate();
+    end = dayjs.tz(`${toDate} 23:59:59`, "YYYY-MM-DD HH:mm:ss", "Asia/Ho_Chi_Minh").toDate();
   }
 
   return { start, end };

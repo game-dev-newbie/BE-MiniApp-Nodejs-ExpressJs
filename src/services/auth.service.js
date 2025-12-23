@@ -244,9 +244,9 @@ export const loginDashboard = async (payload) => {
 export const loginWithZalo = async (payload) => {
   const { accessToken, userInfo, phone } = payload;
 
-  if (!accessToken) {
-    throw new AppError("Thiếu accessToken của Zalo", 400);
-  }
+  // if (!accessToken) {
+  //   throw new AppError("Thiếu accessToken của Zalo", 400);
+  // }
 
   if (!userInfo) {
     throw new AppError(

@@ -43,16 +43,16 @@ const create = async (payload) => {
  * Meta chuẩn cho booking (giữ keys cũ + bổ sung vài field hữu ích)
  */
 const buildBookingMeta = (booking, restaurant, extra = {}) => ({
-  bookingId: booking?.id ?? null,
-  restaurantId: restaurant?.id ?? booking?.restaurant_id ?? null,
-  bookingTime: booking?.booking_time ?? null,
+  booking_id: booking?.id ?? null,
+  restaurant_id: restaurant?.id ?? booking?.restaurant_id ?? null,
+  booking_time: booking?.booking_time ?? null,
 
   // extra useful (không phá FE vì chỉ thêm key)
-  userId: booking?.user_id ?? null,
-  tableId: booking?.table_id ?? null,
+  user_id: booking?.user_id ?? null,
+  table_id: booking?.table_id ?? null,
   status: booking?.status ?? null,
-  peopleCount: booking?.people_count ?? null,
-  customerName: booking?.customer_name ?? null,
+  people_count: booking?.people_count ?? null,
+  customer_name: booking?.customer_name ?? null,
   phone: booking?.phone ?? null,
 
   ...extra,
@@ -62,14 +62,13 @@ const buildBookingMeta = (booking, restaurant, extra = {}) => ({
  * Meta chuẩn cho staff (giữ keys cũ + bổ sung)
  */
 const buildStaffMeta = (staff, extra = {}) => ({
-  staffId: staff?.id ?? null,
-  staffEmail: staff?.email ?? null,
-  staffName: staff?.full_name ?? null,
+  staff_id: staff?.id ?? null,
+  staff_email: staff?.email ?? null,
+  staff_name: staff?.full_name ?? null,
 
   role: staff?.role ?? null,
   status: staff?.status ?? null,
-  restaurantId: staff?.restaurant_id ?? null,
-
+  restaurant_id: staff?.restaurant_id ?? null,
   ...extra,
 });
 
@@ -77,12 +76,11 @@ const buildStaffMeta = (staff, extra = {}) => ({
  * Meta chuẩn cho review (giữ keys cũ + bổ sung)
  */
 const buildReviewMeta = (review, user, restaurant, extra = {}) => ({
-  reviewId: review?.id ?? null,
+  review_id: review?.id ?? null,
   rating: review?.rating ?? null,
-  userId: user?.id ?? review?.user_id ?? null,
-  bookingId: review?.booking_id ?? null,
-  restaurantId: restaurant?.id ?? review?.restaurant_id ?? null,
-
+  user_id: user?.id ?? review?.user_id ?? null,
+  booking_id: review?.booking_id ?? null,
+  restaurant_id: restaurant?.id ?? review?.restaurant_id ?? null,
   ...extra,
 });
 
@@ -210,7 +208,7 @@ export const notifyBookingCancelledByCustomerToCustomer = async (
 export const notifyBookingCompleted = async (booking, restaurant) => {
   return create({
     userId: booking.user_id,
-    type: NOTIFICATION_TYPE.BOOKING_COMPLETED,
+    type: NOTIFICATION_TYPE.BOOKING_CHECKED_IN,
     title: "Booking đã hoàn tất",
     message: `Booking của bạn tại nhà hàng ${restaurant.name} đã hoàn tất. Cảm ơn bạn đã sử dụng dịch vụ!`,
     targetType: NOTIFICATION_TARGET_TYPE.BOOKING,
@@ -248,6 +246,40 @@ export const notifyBookingRefundSuccess = async (
     meta: buildBookingMeta(booking, restaurant, { refundAmount }),
   });
 };
+export const notifyBookingPaymentSuccess = async (
+  booking,
+  restaurant,
+  paymentAmount
+) => {
+  return create({
+    userId: booking.user_id,
+    type: NOTIFICATION_TYPE.BOOKING_PAYMENT_SUCCESS,
+    title: "Thanh toán thành công",
+    message: `Tiền cọc ${paymentAmount.toLocaleString(
+      "vi-VN"
+    )} VNĐ cho booking tại ${restaurant.name} đã được thanh toán thành công.`,
+    targetType: NOTIFICATION_TARGET_TYPE.PAYMENT,
+    targetId: booking.id,
+    meta: buildBookingMeta(booking, restaurant, { paymentAmount }),
+  });
+};
+export const notifyBookingPaymentFailed = async (
+  booking,
+  restaurant,
+  paymentAmount
+) => {
+  return create({
+    userId: booking.user_id,
+    type: NOTIFICATION_TYPE.BOOKING_PAYMENT_FAILED,
+    title: "Thanh toán thất bại",
+    message: `Thanh toán ${paymentAmount.toLocaleString(
+      "vi-VN"
+    )} VNĐ cho booking tại ${restaurant.name} không thành công. Vui lòng thử lại.`,
+    targetType: NOTIFICATION_TARGET_TYPE.PAYMENT,
+    targetId: booking.id,
+    meta: buildBookingMeta(booking, restaurant, { paymentAmount }),
+  });
+};
 
 /**
  * ==========================================================
@@ -270,7 +302,7 @@ export const notifyStaffRegistered = async (staff, restaurant) => {
 export const notifyStaffApproved = async (staff, restaurant) => {
   return create({
     restaurantId: restaurant.id,
-    type: NOTIFICATION_TYPE.STAFF_APPROVED,
+    type: NOTIFICATION_TYPE.STAFF_STATUS_CHANGED,
     title: "Nhân viên được phê duyệt",
     message: `Nhân viên ${staff.full_name} đã được phê duyệt thành công.`,
     targetType: NOTIFICATION_TARGET_TYPE.STAFF,
@@ -282,7 +314,7 @@ export const notifyStaffApproved = async (staff, restaurant) => {
 export const notifyStaffRejected = async (staff, restaurant) => {
   return create({
     restaurantId: restaurant.id,
-    type: NOTIFICATION_TYPE.STAFF_REJECTED,
+    type: NOTIFICATION_TYPE.STAFF_STATUS_CHANGED,
     title: "Nhân viên bị từ chối",
     message: `Nhân viên ${staff.full_name} đã bị từ chối.`,
     targetType: NOTIFICATION_TARGET_TYPE.STAFF,
@@ -294,7 +326,7 @@ export const notifyStaffRejected = async (staff, restaurant) => {
 export const notifyStaffLocked = async (staff, restaurant) => {
   return create({
     restaurantId: restaurant.id,
-    type: NOTIFICATION_TYPE.STAFF_LOCKED,
+    type: NOTIFICATION_TYPE.STAFF_STATUS_CHANGED,
     title: "Nhân viên bị khóa",
     message: `Nhân viên ${staff.full_name} đã bị khóa.`,
     targetType: NOTIFICATION_TARGET_TYPE.STAFF,
@@ -306,7 +338,7 @@ export const notifyStaffLocked = async (staff, restaurant) => {
 export const notifyStaffUnlocked = async (staff, restaurant) => {
   return create({
     restaurantId: restaurant.id,
-    type: NOTIFICATION_TYPE.STAFF_UNLOCKED,
+    type: NOTIFICATION_TYPE.STAFF_STATUS_CHANGED,
     title: "Nhân viên được mở khóa",
     message: `Nhân viên ${staff.full_name} đã được mở khóa.`,
     targetType: NOTIFICATION_TARGET_TYPE.STAFF,
