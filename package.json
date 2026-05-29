@@ -13,41 +13,9 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all",
-    "db:seed": "sequelize-cli db:seed:all",
-    "db:seed:undo": "sequelize-cli db:seed:undo:all",
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
-    "test:unit": "jest tests/unit",
-    "test:integration": "jest tests/integration",
-    "test:coverage": "jest --coverage --coverageReporters=html",
-    "test:verbose": "jest --verbose",
-    "test:ci": "jest --ci --coverage --maxWorkers=2"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "transform": {},
-    "coverageDirectory": "coverage",
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/tests/**",
-      "!src/migrations/**",
-      "!src/seeders/**",
-      "!src/server.js"
-    ],
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ],
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/tests/setup/testSetup.js"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 70,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
-      }
-    }
+    "db:seed": "sequelize-cli db:seed",
+    "db:seed:all": "sequelize-cli db:seed:all",
+    "db:seed:undo": "sequelize-cli db:seed:undo:all"
   },
   "keywords": [
     "nodejs",

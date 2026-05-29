@@ -11,14 +11,14 @@ class RestaurantUpdateDto {
       tags: Joi.string().allow("", null),
 
       open_time: Joi.string()
-        .pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
+        .pattern(/^([01]\d|2[0-3]):([0-5]\d)$/)
         .message("Giờ mở cửa phải có dạng HH:mm")
-        .allow(null),
+        .allow(null).optional(),
 
       close_time: Joi.string()
-        .pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
+        .pattern(/^([01]\d|2[0-3]):([0-5]\d)$/)
         .message("Giờ đóng cửa phải có dạng HH:mm")
-        .allow(null),
+        .allow(null).optional(),
 
       require_deposit: Joi.boolean(),
       default_deposit_amount: Joi.number().integer().min(0),

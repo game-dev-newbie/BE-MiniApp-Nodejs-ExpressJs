@@ -40,10 +40,7 @@
 - `dtos/`: Data transfer objects.
   - `requests/` and `responses/` examples (e.g., `demo.js`).
 - `utils/`: Utility helpers (e.g., `demo.js`).
-- `tests/`: Testing scaffolding.
-  - `unit/test.js`
-  - `integration/test.js`
-  - `e2e/test.js`
+
 
 ## `public/`
 - `assets/`: Static assets placeholder (e.g., `demo.js`).
